@@ -1,0 +1,9 @@
+**/.vagrant
+
+**/.env
+**/env_local
+**/terraform.tfvars
+**/__pycache__
+**/.pytest_cache
+
+**/*.jar
