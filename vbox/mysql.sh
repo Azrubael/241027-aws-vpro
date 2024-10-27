@@ -1,5 +1,5 @@
 #!/bin/bash
-DATABASE_PASS='admin123'
+source /home/vagrant/.env/env_local
 sudo yum update -y
 sudo yum install -y epel-release -y
 sudo yum install git -y
@@ -35,7 +35,4 @@ sudo mysql -u root -p"$DATABASE_PASS" -e "FLUSH PRIVILEGES"
 # Restart mariadb-server
 sudo systemctl restart mariadb
 
-# netstat -tuln
-# ss -tuln
-# lsof -n -P
-# nmap -sT 192.168.56.15
+rm /home/vagrant/.env/env_local

@@ -16,7 +16,12 @@ To run the deployment:
 vagrant up
 bash vpro_ping.sh
 ```
-
+To check if you have some issues:
+```bash
+vagrant ssh [Name]
+netstat -tuln
+ss -tuln
+```
 
 
 
