@@ -20,19 +20,17 @@ chown -R tomcat.tomcat /usr/local/tomcat
 
 rm -rf /etc/systemd/system/tomcat.service
 
-cat <<EOT>> /etc/systemd/system/tomcat.service
+cat <<EOT >> /etc/systemd/system/tomcat.service
 [Unit]
 Description=Tomcat
 After=network.target
 
 [Service]
-
 User=tomcat
 Group=tomcat
-
 WorkingDirectory=/usr/local/tomcat
 
-#Environment=JRE_HOME=/usr/lib/jvm/jre
+Environment=JRE_HOME=/usr/lib/jvm/jre
 Environment=JAVA_HOME=/usr/lib/jvm/jre
 
 Environment=CATALINA_PID=/var/tomcat/%i/run/tomcat.pid
@@ -41,6 +39,7 @@ Environment=CATALINE_BASE=/usr/local/tomcat
 
 ExecStart=/usr/local/tomcat/bin/catalina.sh run
 ExecStop=/usr/local/tomcat/bin/shutdown.sh
+SyslogIdentifier=tomcat-%i
 
 
 RestartSec=10
@@ -48,23 +47,26 @@ Restart=always
 
 [Install]
 WantedBy=multi-user.target
-
 EOT
 
-systemctl daemon-reload
-systemctl start tomcat
-systemctl enable tomcat
+sudo systemctl daemon-reload
+sudo systemctl start tomcat
 
 git clone -b main https://github.com/hkhcoder/vprofile-project.git
 cd vprofile-project
 mvn install
 systemctl stop tomcat
-sleep 20
-rm -rf /usr/local/tomcat/webapps/ROOT*
-cp target/vprofile-v2.war /usr/local/tomcat/webapps/ROOT.war
-systemctl start tomcat
-sleep 20
-# systemctl stop firewalld
-# systemctl disable firewalld
-#cp /vagrant/application.properties /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
-systemctl restart tomcat
+
+sudo rm -rf /usr/local/tomcat/webapps/ROOT*
+sudo cp target/vprofile-v2.war /usr/local/tomcat/webapps/ROOT.war
+sudo mv -f '/home/vagrant/.env/application.properties' '/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties'
+
+sudo systemctl start tomcat
+sudo systemctl enable tomcat
+sleep 10
+
+: <<'CHECK'
+    $ sudo find / -type d -name "vprofile-project"
+/tmp/vprofile-project
+    $ ss -tuln
+CHECK
