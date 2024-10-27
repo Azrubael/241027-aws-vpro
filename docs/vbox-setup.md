@@ -25,8 +25,16 @@ ss -tuln
 ```
 
 ### To check if the Tomcat server with WebApp is OK
-###### Go to the internet browser
+###### Go to the internet browser and check DB and RabbutMQ
 ```
 http://192.168.56.12:8080
 ```
 admin_vp
+Rabbitmq initiated
+Generated 2 Connections
+6 Chanels 1 Exchage and 2 Que
+
+```
+http://192.168.56.11/index
+```
+DevOps
