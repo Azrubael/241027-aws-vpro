@@ -1,0 +1,22 @@
+### 2024-10-27  11:59
+---------------------
+
+**PROVISIONING** - Setup should be done in below mentioned order
+| No | Service   | Description         | IP address    | Name  |
+|----|-----------|---------------------|---------------|-------|
+| 1. | MySQL     | Database server     | 192.168.56.15 | db01  |
+| 2. | Memcache  | DB Caching server   | 192.168.56.14 | mc01  |
+| 3. | RabbitMQ  | Broker/Queue server | 192.168.56.16 | rmq01 |
+| 4. | Tomcat    | Application server  | 192.168.56.12 | app01 |
+| 5. | Nginx     | Web server          | 192.168.56.11 | web01 |
+
+All IaC see in the directory `./vbpx/`
+To run the deployment:
+```bash
+vagrant up
+bash vpro_ping.sh
+```
+
+
+
+
