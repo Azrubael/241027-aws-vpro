@@ -22,8 +22,8 @@ Vagrant.configure("2") do |config|
     awslab.vm.provision "file", source: "~/.aws/dove.env", destination: "/home/vagrant/.env/env_local"
     
     ##### Install packages
-    awslab.vm.provision "shell", path: "scripts/vm-provision.sh"
-    awslab.vm.provision "shell", path: "scripts/awscli-setup.sh"
+    awslab.vm.provision "shell", path: "vagrant-vm/vm-provision.sh"
+    awslab.vm.provision "shell", path: "vagrant-vm/awscli-setup.sh"
 
   end
   

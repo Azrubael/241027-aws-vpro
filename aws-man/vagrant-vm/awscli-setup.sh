@@ -33,22 +33,23 @@ source /home/vagrant/.env/env_local
 mkdir -p /home/vagrant/.aws
 
 # Write the credentials to the credentials file
-cat <<EOL > ~/.aws/credentials
+cat <<EOL > /home/vagrant/.aws/credentials
 [default]
 aws_access_key_id = $AWS_ACCESS_KEY_ID
 aws_secret_access_key = $AWS_SECRET_ACCESS_KEY
 EOL
 
 # Write the configuration to the config file
-cat <<EOL > ~/.aws/config
+cat <<EOL > /home/vagrant/.aws/config
 [default]
 region = $AWS_DEFAULT_REGION
 output = $AWS_OUTPUT_FORMAT
 EOL
 
-rm -f /home/vagrant/.env/env_local
+sudo rm -f /home/vagrant/.env/env_local
 
-if aws s3 ls; then
+# Check if AWS CLI is configured for the user 'vagrant'
+if sudo -u vagrant bash -c 'aws s3 ls'; then
     echo "AWS CLI has been configured successfully!"
 else
     echo "Something went wrong."
