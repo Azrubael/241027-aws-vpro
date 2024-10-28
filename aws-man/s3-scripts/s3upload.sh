@@ -36,3 +36,8 @@ for FILE in "${FILES[@]}"; do
         echo "Warning: $FILE doesn't exist and cannot be uploaded."
     fi
 done
+
+echo
+echo "### Listing contents of S3 bucket: $BUCKET_NAME"
+aws s3 ls "s3://$BUCKET_NAME/"
+
