@@ -1,0 +1,30 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+### Launch a local virtual machine instead of using AWS CloudShell
+
+
+Vagrant.configure("2") do |config|
+  
+  ### ----- awslab vm -----
+  config.vm.define "awslab" do |awslab|
+    awslab.vm.box = "ubuntu/focal64"
+    awslab.vm.hostname = "awslab"
+    awslab.vm.network "private_network", ip: "192.168.56.19"
+    awslab.vm.synced_folder ".", "/vagrant", disabled: false
+    awslab.vm.provider "virtualbox" do |ubuntu20|
+      ubuntu20.name = "awslab"
+      ubuntu20.memory = "1600"
+      ubuntu20.cpus = 2
+      ubuntu20.customize ["modifyvm", :id, "--vram", "16"]
+    end
+
+    awslab.vm.provision "file", source: "~/.aws/dove.env", destination: "/home/vagrant/.env/env_local"
+    
+    ##### Install packages
+    awslab.vm.provision "shell", path: "scripts/vm-provision.sh"
+    awslab.vm.provision "shell", path: "scripts/awscli-setup.sh"
+
+  end
+  
+end

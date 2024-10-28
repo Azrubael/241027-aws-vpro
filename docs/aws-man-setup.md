@@ -13,9 +13,9 @@
 ### Work Plan
 1. Login to AWS Account
 2. Create an S3 bucket "az-$(date +%Y%m%d)"
-3. Build the application from source code.
-4. Upload the application, scripts and supplementary files to S3 bucket
-5. Create a Key Pair "key-$(date +%Y%m%d)" and upload it on AWS
+3. Upload the application, scripts and supplementary files to S3 bucket
+4. Create a Key Pair "key-$(date +%Y%m%d)" and upload it on AWS
+5. Create a VPC and upload files for provisioning.
 6. Create Security Groups:
 - vpro-elb-sg (SG for the Elastic Load Balancer)
     + *Inbound* = HTTP > Port:80 > 0.0.0.0/0
@@ -38,3 +38,6 @@
 10. Buy a new domain name in GoDaddy DNS [see 104]
 11. Update IP to name mapping in route 53
 12. Map ELP Endpoint to website name in Godaddy DNS
+13. Validate
+14. Build Autoscaling Group for Tomcat9 instances
+15. Remove the infrastrusture
