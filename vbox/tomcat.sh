@@ -56,14 +56,17 @@ git clone -b main https://github.com/hkhcoder/vprofile-project.git
 cd vprofile-project
 mvn install
 systemctl stop tomcat
+sleep 10
 
 sudo rm -rf /usr/local/tomcat/webapps/ROOT*
 sudo cp target/vprofile-v2.war /usr/local/tomcat/webapps/ROOT.war
-sudo mv -f '/home/vagrant/.env/application.properties' '/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties'
+sleep 60
+sudo cp -f '/home/vagrant/application.properties' '/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties'
 
 sudo systemctl start tomcat
 sudo systemctl enable tomcat
-sleep 10
+
+echo "Setup finished."
 
 : <<'CHECK'
     $ sudo find / -type d -name "vprofile-project"
