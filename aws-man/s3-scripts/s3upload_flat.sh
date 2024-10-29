@@ -18,13 +18,13 @@ FILES=( "artifact/vpro.zip"
         "aws-vm/1-mysql.sh"
         "aws-vm/2-memcached.sh"
         "aws-vm/3-rabbitmq.sh"
-        "aws-vm/4-tomcat.sh" )
+        "aws-vm/4-tomcat.sh"
+        "aws-vm/5-nginx.sh" )
 
 for FILE in "${FILES[@]}"; do
     if [ -f "../$FILE" ]; then
-        S3_PATH="s3://$BUCKET_NAME/$FILE"
-        echo "Uploading $FILE to $S3_PATH"
-        aws s3 cp "../$FILE" "$S3_PATH"
+        echo "Uploading $FILE to s3://$BUCKET_NAME/"
+        aws s3 cp "../$FILE" "s3://$BUCKET_NAME/"
         
         # Check if the upload was successful
         if [ $? -eq 0 ]; then
