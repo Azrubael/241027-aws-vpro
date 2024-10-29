@@ -60,4 +60,5 @@ fi
 : << 'AWSCLI_MANUAL_CONFIG'
 aws configure
 aws s3 ls
+netstat -lntu
 AWSCLI_MANUAL_CONFIG
