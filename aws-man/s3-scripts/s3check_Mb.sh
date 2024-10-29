@@ -18,7 +18,17 @@ do
     echo -e "\nBucket: $bucket"
     echo "Creation Date: $(aws s3api list-buckets --query "Buckets[?Name=='$bucket'].CreationDate" --output text)"
     echo "Region: $(aws s3api get-bucket-location --bucket $bucket --query LocationConstraint --output text)"
-    echo "Number of objects: $(aws s3 ls s3://$bucket --recursive --summarize | grep "Total Objects:" | awk '{print $3}')"
-    echo "Total Size: $(aws s3 ls s3://$bucket --recursive --summarize | grep "Total Size:" | awk '{print $3 $4}')"
+    
+    # Get the number of objects
+    num_objects=$(aws s3 ls s3://$bucket --recursive --summarize | grep "Total Objects:" | awk '{print $3}')
+    echo "Number of objects: $num_objects"
+    
+    # Get the total size in bytes
+    total_size_bytes=$(aws s3 ls s3://$bucket --recursive --summarize | grep "Total Size:" | awk '{print $3}')
+    
+    # Convert total size to megabytes
+    total_size_mb=$(echo "scale=2; $total_size_bytes / 1048576" | bc)
+    echo "Total Size: ${total_size_mb} MB"
+    
     echo "-------------------------------------------"
 done
