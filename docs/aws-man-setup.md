@@ -1,7 +1,7 @@
 ### 2024-10-29  11:12
 ---------------------
 
-### IP Table
+### IP Table - from the branch 'vbox'
 | No | Service  | Description         | IP address    | Name  | Access Ports  |
 |----|----------|---------------------|---------------|-------|---------------|
 | 1. | MySQL    | Database server     | 192.168.56.15 | db01  |  TCP:3306     |
@@ -9,6 +9,19 @@
 | 3. | RabbitMQ | Broker/Queue server | 192.168.56.16 | rmq01 | TCP:5672      |
 | 4. | Tomcat   | Application server  | 192.168.56.12 | app01 | HTTP:8080     |
 | 5. | Nginx    | Web server          | 192.168.56.11 | web01 | HTTP:80       |
+
+
+
+### 2024-10-30  10:45
+---------------------
+### IP Table with actual data
+| No | Service  | Description  | IP address       | Name  | Access Ports |
+|----|----------|--------------|------------------|-------|--------------|
+| 1. | MySQL    | Database     | 172.19.100.7/16  | db01  |  TCP:3306    |
+| 2. | Memcache | DB Caching   | 172.19.100.8/16  | mc01  |  TCP:11211   |
+| 3. | RabbitMQ | Broker/Queue | 172.19.100.9/16  | rmq01 |  TCP:5672    |
+| 4. | Tomcat   | Application  | 172.19.1.7/16    | app01 |  HTTP:8080   |
+
 
 ### Work Plan
 1. Login to AWS Account

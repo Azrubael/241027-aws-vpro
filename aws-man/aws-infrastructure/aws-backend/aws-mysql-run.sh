@@ -4,8 +4,7 @@ S3_SCRIPT_URL="https://az-20241029.s3.us-east-1.amazonaws.com/1-mysql.sh"
 
 USER_DATA_SCRIPT="#!/bin/bash
 curl -O $S3_SCRIPT_URL
-chmod +x your-script.sh
-./your-script.sh"
+bash 1-mysql.sh"
 
 USER_DATA_ENCODED=$(echo "$USER_DATA_SCRIPT" | base64)
 
