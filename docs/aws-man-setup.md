@@ -19,9 +19,10 @@
 |----|----------|--------------|------------------|-------|--------------|
 | 1. | MySQL    | Database     | 172.19.100.7/16  | db01  |  TCP:3306    |
 | 2. | Memcache | DB Caching   | 172.19.100.8/16  | mc01  |  TCP:11211   |
+|    |          |              |                  |       |  UDP:11111   |
 | 3. | RabbitMQ | Broker/Queue | 172.19.100.9/16  | rmq01 |  TCP:5672    |
-| 4. | Tomcat   | Application  | 172.19.1.7/16    | app01 |  HTTP:8080   |
-
+| 4. | TomcatA  | Application  | 172.19.1.0/16    | app01 |  HTTP:8080   |
+| 5. | TomcatB  | Application  | 172.19.1.0/16    | app01 |  HTTP:8080   |
 
 ### Work Plan
 1. Login to AWS Account
@@ -42,6 +43,7 @@
 - vpro-backend-sg (SG for backend services - MySQL, MemcacheD and RabbitMQ)
     + *Inbound* = MYSQL/Aurora > TCP:3306 > vpro-app-sg (to MySQL server)
     + *Inbound* = 'Custom TCP':11211 > vpro-app-sg (from Tomcat9 to MemcacheD)
+    + *Inbound* = 'UDP':11111 > vpro-app-sg (from Tomcat9 to MemcacheD)
     + *Inbound* = 'Custom TCP':5672 > vpro-app-sg  (from Tomcat9 to RabbitMQ)
     + *Inbound* = 'All traffic' > vpro-backend-sg (allow all `internal` traffic)
     + *Outbond* = Allow all
