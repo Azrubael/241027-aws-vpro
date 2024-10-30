@@ -1,8 +1,21 @@
 #!/bin/bash
-source /home/vagrant/.env/env_local
+# The script to setup a MySQL server on an Amazon Linux 2 instance
+
+mkdir -p /tmp/provisioning
+cd /tmp/provisioning
+curl -O https:///az-20241029.s3.us-east-1.amazonaws.com/db_env
+source /tmp/provisioning/db_env
+
 sudo yum update -y
 sudo yum install -y epel-release -y
 sudo yum install git -y
+
+sudo echo "### custom IPs
+172.19.100.7	db01
+172.19.100.8	mc01
+172.19.100.9	rmq01
+" >> /etc/hosts
+
 sudo yum install unzip -y
 sudo yum install mariadb-server -y
 
@@ -27,4 +40,4 @@ sudo mysql -u root -p"$DATABASE_PASS" -e "FLUSH PRIVILEGES"
 # Restart mariadb-server
 sudo systemctl restart mariadb
 
-rm /home/vagrant/.env/env_local
+sudo rm -rf /tmp/provisioning
