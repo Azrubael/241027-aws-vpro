@@ -1,24 +1,16 @@
 #!/bin/bash
-# The script to run a MySQL server on an Amazon Linux 2 instance
 
-S3_SCRIPT_URL="https://az-20241029.s3.us-east-1.amazonaws.com/1-mysql.sh"
-TARGET_IP="172.19.100.7"
-SUBNET="vpro-backend-subnet"
-BACKEND_SG="vpro-backend-sg"
+S3_SCRIPT_URL="https://az-20241029.s3.us-east-1.amazonaws.com/4-tomcat.sh"
+SUBNET="vpro-frontend-subnet"
+FRONTEND_SG="vpro-frontend-sg"
 
-# Checking IP address availability
-if ping -c 1 $TARGET_IP &> /dev/null; then
-    echo "IP $TARGET_IP is already busy. Stop execution."
-    exit 1
-fi
-
-# Get IDs of backend subnet and security group
+# Get IDs of frontend subnet and security group
 SUBNET_ID=$(aws ec2 describe-subnets --filters Name=tag:Name,Values=$SUBNET --query 'Subnets[*].SubnetId' --output text)
-BACKEND_SG_ID=$(aws ec2 describe-security-groups --filters Name=group-name,Values=$BACKEND_SG --query 'SecurityGroups[*].GroupId' --output text)
+FRONTEND_SG_ID=$(aws ec2 describe-security-groups --filters Name=group-name,Values=$FRONTEND_SG --query 'SecurityGroups[*].GroupId' --output text)
 
 USER_DATA_SCRIPT="#!/bin/bash
 curl -O $S3_SCRIPT_URL
-bash 1-mysql.sh"
+bash 4-tomcat.sh"
 
 USER_DATA_ENCODED=$(echo "$USER_DATA_SCRIPT" | base64)
 
@@ -28,13 +20,12 @@ aws ec2 run-instances \
     --key-name "vpro-key" \
     --network-interfaces "{
             \"SubnetId\":\"$SUBNET_ID\",
-            \"AssociatePublicIpAddress\":false,
+            \"AssociatePublicIpAddress\":true,
             \"DeviceIndex\":0,
-            \"Groups\":[\"$BACKEND_SG_ID\"],
-            \"PrivateIpAddress\":\"$TARGET_IP\"
+            \"Groups\":[\"$FRONTEND_SG_ID\"]
         }" \
     --credit-specification '{"CpuCredits":"standard"}' \
-    --tag-specifications '{"ResourceType":"instance","Tags":[{"Key":"Name","Value":"db01"},{"Key":"Server","Value":"MySQL"}]}' \
+    --tag-specifications '{"ResourceType":"instance","Tags":[{"Key":"Name","Value":"app01"},{"Key":"Server","Value":"TomCat"}]}' \
     --metadata-options '{"HttpEndpoint":"enabled","HttpPutResponseHopLimit":2,"HttpTokens":"optional"}' \
     --private-dns-name-options '{"HostnameType":"ip-name","EnableResourceNameDnsARecord":false,"EnableResourceNameDnsAAAARecord":false}' \
     --count "1" \

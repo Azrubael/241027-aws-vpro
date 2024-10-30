@@ -1,4 +1,5 @@
 #!/bin/bash
+# The script to terminate AWS EC2 instances with the tag Server=MySQL
 
 # Look for instances with tag Server=MySQL
 INSTANCE_IDS=$(aws ec2 describe-instances \
