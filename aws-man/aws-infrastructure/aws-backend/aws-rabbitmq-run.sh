@@ -1,7 +1,7 @@
 #!/bin/bash
 
-S3_SCRIPT_URL="https://az-20241029.s3.us-east-1.amazonaws.com/1-mysql.sh"
-TARGET_IP="172.19.100.7"
+S3_SCRIPT_URL="https://az-20241029.s3.us-east-1.amazonaws.com/3-rabbitmq.sh"
+TARGET_IP="172.19.100.9"
 SUBNET="vpro-backend-subnet"
 BACKEND_SG="vpro-backend-sg"
 
@@ -35,7 +35,7 @@ aws ec2 run-instances \
             \"PrivateIpAddress\":\"$TARGET_IP\"
         }" \
     --credit-specification '{"CpuCredits":"standard"}' \
-    --tag-specifications '{"ResourceType":"instance","Tags":[{"Key":"Name","Value":"db01"},{"Key":"Server","Value":"MySQL"}]}' \
+    --tag-specifications '{"ResourceType":"instance","Tags":[{"Key":"Name","Value":"rmq01"},{"Key":"Server","Value":"RabbitMQ"}]}' \
     --metadata-options '{"HttpEndpoint":"enabled","HttpPutResponseHopLimit":2,"HttpTokens":"optional"}' \
     --private-dns-name-options '{"HostnameType":"ip-name","EnableResourceNameDnsARecord":false,"EnableResourceNameDnsAAAARecord":false}' \
     --count "1" \
