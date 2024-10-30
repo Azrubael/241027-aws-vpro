@@ -1,4 +1,5 @@
 #!/bin/bash
+# The script to check if there any AWS S3 buckets
 
 # Set the AWS region (optional, remove if you want to use the default region)
 AWS_DEFAULT_REGION="us-east-1"

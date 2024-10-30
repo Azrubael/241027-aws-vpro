@@ -1,4 +1,6 @@
 #!/bin/bash
+# The script to upload the predefiles list of files into AWS S3 bucket $1
+# All files will be uploaded without any structure at root of the S3 bucket
 
 # Check if the bucket name is provided
 if [ -z "$1" ]; then
@@ -22,9 +24,10 @@ FILES=( "artifact/vpro.zip"
         "aws-vm/5-nginx.sh" )
 
 for FILE in "${FILES[@]}"; do
-    if [ -f "../$FILE" ]; then
-        echo "Uploading $FILE to s3://$BUCKET_NAME/"
-        aws s3 cp "../$FILE" "s3://$BUCKET_NAME/"
+    FILEPATH="../../$FILE"
+    if [ -f "$FILEPATH" ]; then
+        echo "Uploading $FILEPATH to s3://$BUCKET_NAME/"
+        aws s3 cp "$FILEPATH" "s3://$BUCKET_NAME/"
         
         # Check if the upload was successful
         if [ $? -eq 0 ]; then
