@@ -1,4 +1,5 @@
 #!/bin/bash
+# The script to create and setup a completely new VPC
 
 APP="vpro"
 VPC_NAME="${APP}-VPC"
