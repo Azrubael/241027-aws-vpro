@@ -6,7 +6,7 @@ from botocore.exceptions import ClientError
 from dotenv import load_dotenv
 import os
 
-load_dotenv(dotenv_path='sandbox_env')
+load_dotenv(dotenv_path='../sandbox_env')
 
 def get_vpc_id_by_tag(tag_name):
     """Gets the VPC ID by tag name and returns the ID or None if not found"""

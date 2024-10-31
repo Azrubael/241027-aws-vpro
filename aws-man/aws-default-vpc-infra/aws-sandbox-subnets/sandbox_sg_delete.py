@@ -6,7 +6,7 @@ import os
 import boto3
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path='sandbox_env')
+load_dotenv(dotenv_path='../sandbox_env')
 
 
 def get_subnet_id_by_name(name):

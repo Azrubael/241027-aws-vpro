@@ -8,7 +8,7 @@ from botocore.exceptions import ClientError
 from dotenv import load_dotenv
 from sanbox_subnets_tag import get_vpc_id_by_tag
 
-load_dotenv(dotenv_path='subnets_env')
+load_dotenv(dotenv_path='../subnets_env')
 
 
 def create_security_group(group_name, description, vpc_id):

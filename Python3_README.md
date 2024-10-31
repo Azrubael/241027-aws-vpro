@@ -21,7 +21,7 @@
 
 # [3] - Автоконфигурация изолированного окружения Python3
 ```bash
-    (azenv)$ pip install -r dependencies.txt
+    (azenv)$ pip install -r python3_dependencies
 ```
 
 
@@ -38,7 +38,7 @@
 
 # [5] - Создание перечня зависимостей
 ```bash
-    (azenv)$ pip freeze > dependencies.txt
+    (azenv)$ pip freeze > python3_dependencies
 ```
 
 
