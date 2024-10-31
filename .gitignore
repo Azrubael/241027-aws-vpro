@@ -1,4 +1,7 @@
 **/.vagrant
+**/azenv
+**/azwenv
+**/pyenv
 
 **/.env
 **/env_local
