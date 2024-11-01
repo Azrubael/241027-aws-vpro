@@ -1,4 +1,5 @@
 #!/bin/bash
+# Script to permanently delete the AWS S3 bucket with name $1
 
 BUCKET_NAME=$1
 REGION="us-east-1"
