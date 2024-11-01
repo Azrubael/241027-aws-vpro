@@ -21,7 +21,27 @@ iam_client = boto3.client('iam')
 # Create the S3 bucket
 s3_client.create_bucket(Bucket=bucket_name)
 
-# Создание trust policy для IAM роли
+
+# Check if the IAM role exists
+def role_exists(role_name):
+    try:
+        iam_client.get_role(RoleName=role_name)
+        return True
+    except iam_client.exceptions.NoSuchEntityException:
+        return False
+
+
+# Check if the IAM policy exists
+def policy_exists(role_name, policy_name):
+    try:
+        iam_client.list_role_policies(RoleName=role_name)
+        policies = iam_client.list_role_policies(RoleName=role_name)['PolicyNames']
+        return policy_name in policies
+    except iam_client.exceptions.NoSuchEntityException:
+        return False
+
+
+# Create the trust policy for the IAM role
 trust_policy = {
     "Version": "2012-10-17",
     "Statement": [
@@ -36,10 +56,13 @@ trust_policy = {
 }
 
 # Create the IAM role
-iam_client.create_role(
-    RoleName=role_name,
-    AssumeRolePolicyDocument=json.dumps(trust_policy)
-)
+if not role_exists(role_name):
+    iam_client.create_role(
+        RoleName=role_name,
+        AssumeRolePolicyDocument=json.dumps(trust_policy)
+    )
+else:
+    print(f"Role '{role_name}' already exists.")
 
 # Create the S3 policy for accessing S3
 s3_policy = {
@@ -60,11 +83,14 @@ s3_policy = {
 }
 
 # Apply the policy to the role
-iam_client.put_role_policy(
-    RoleName=role_name,
-    PolicyName=policy_name,
-    PolicyDocument=json.dumps(s3_policy)
-)
+if not policy_exists(role_name, policy_name):
+    iam_client.put_role_policy(
+        RoleName=role_name,
+        PolicyName=policy_name,
+        PolicyDocument=json.dumps(s3_policy)
+    )
+else:
+    print(f"Policy '{policy_name}' already exists for role '{role_name}'.")
 
 # Upload predefined files to S3
 files = [

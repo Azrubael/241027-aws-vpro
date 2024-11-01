@@ -62,23 +62,25 @@
      - *IAMReadOnlyAccess*: Чтение информации о IAM (необходима только для просмотра, но не для создания).
    - Если вы хотите предоставить более ограниченные права, вы можете создать пользовательскую политику с необходимыми разрешениями. Вот пример такой политики:
 
-   ```json
-   {
-       "Version": "2012-10-17",
-       "Statement": [
-           {
-               "Effect": "Allow",
-               "Action": [
-                   "iam:CreateRole",
-                   "iam:PutRolePolicy",
-                   "iam:AttachRolePolicy",
-                   "iam:PassRole"
-               ],
-               "Resource": "arn:aws:iam::YOUR_ACCOUNT_ID:role/EC2S3AccessRole"
-           }
-       ]
-   }
-   ```
+```json
+{
+   "Version": "2012-10-17",
+   "Statement": [
+       {
+           "Effect": "Allow",
+           "Action": [
+               "iam:CreateRole",
+               "iam:PutRolePolicy",
+               "iam:AttachRolePolicy",
+               "iam:PassRole",
+               "iam:DeleteRolePolicy",
+               "iam:DeleteRole"
+           ],
+           "Resource": "arn:aws:iam::YOUR_ACCOUNT_ID:role/EC2S3AccessRole"
+       }
+   ]
+}
+```
 
 5. *Сохраните изменения*:
    - После выбора необходимых политик нажмите "Next: Review" (Далее: Обзор) и затем "Add permissions" (Добавить разрешения).
