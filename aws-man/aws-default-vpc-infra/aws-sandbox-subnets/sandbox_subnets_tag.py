@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-# The script to TAG the sanbox subnets in the 'DEFAULT-VPC' network
+# The script to tag the sanbox subnets in the 'DEFAULT-VPC' network
 
 import boto3
 from botocore.exceptions import ClientError
 from dotenv import load_dotenv
 import os
 
-load_dotenv(dotenv_path='../sandbox_env')
+load_dotenv(dotenv_path='./sandbox_env')
 
 def get_vpc_id_by_tag(tag_name):
     """Gets the VPC ID by tag name and returns the ID or None if not found"""

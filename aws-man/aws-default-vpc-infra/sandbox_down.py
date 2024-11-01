@@ -17,10 +17,11 @@ for script in clean_order:
     else:
         print("Unknown script type:", script)
         exit(1)
-    result =  subprocess.run([interpreter, script], \
+    result = subprocess.run([interpreter, script], \
                 capture_output=True, check=True, text=True)
     print(f"Script {script} output:\n", result.stdout)
-    print(f"Script {script} Error:\n", result.stderr)
+    if result.stderr:
+        print(f"Script {script} Error:\n", result.stderr)
 
 print("\n +++ The SANDBOX cleaned successfully +++ ")
 

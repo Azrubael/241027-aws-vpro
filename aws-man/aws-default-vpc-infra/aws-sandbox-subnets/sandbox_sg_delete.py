@@ -5,8 +5,9 @@
 import os
 import boto3
 from dotenv import load_dotenv
+import time
 
-load_dotenv(dotenv_path='../sandbox_env')
+load_dotenv(dotenv_path='./sandbox_env')
 
 
 def get_subnet_id_by_name(name):
@@ -58,6 +59,9 @@ if __name__ == "__main__":
     frontend_sg_id = get_security_group_id_by_name(frontend_sg)
     backend_sg_id = get_security_group_id_by_name(backend_sg)
 
+    time.sleep(10)
+    print("Waiting 10 seconds before deleting security groups...")
+    
     if frontend_sg_id:
         delete_security_group(frontend_sg_id)
         print(f"Deleted {frontend_name} security group with ID: {frontend_sg_id}")

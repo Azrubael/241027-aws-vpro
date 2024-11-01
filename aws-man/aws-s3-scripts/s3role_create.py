@@ -102,8 +102,7 @@ files = [
     "aws-vm/1-mysql.sh",
     "aws-vm/2-memcached.sh",
     "aws-vm/3-rabbitmq.sh",
-    "aws-vm/4-tomcat.sh",
-    "aws-vm/5-nginx.sh"
+    "aws-vm/4-tomcat.sh"
 ]
 
 for file in files:
