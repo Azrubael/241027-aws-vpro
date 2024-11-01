@@ -120,3 +120,4 @@ aws ec2 authorize-security-group-ingress \
 
 echo
 echo "Subnets and Security Groups created!"
+aws ec2 describe-subnets --filters Name=vpc-id,Values=$VPC_ID --query 'Subnets[*].{ID:SubnetId,Name:Tags[?Key==`Name`].Value | [0],CIDR:CidrBlock}' --output table
