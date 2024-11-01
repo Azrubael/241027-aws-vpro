@@ -107,7 +107,7 @@ files = [
 ]
 
 for file in files:
-    file_path = os.path.join("..", "..", file)
+    file_path = os.path.join("..", file)
     if os.path.isfile(file_path):
         print(f"Uploading {file_path} to s3://{bucket_name}/")
         try:

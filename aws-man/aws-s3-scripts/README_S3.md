@@ -1,4 +1,4 @@
-### 2024-10-30  11:00
+### 2024-11-01  17:44
 ---------------------
 
 ```bash
@@ -13,6 +13,6 @@ s3upload_flat.sh            # Upload predefined files to AWS S3 [bucket_name]
                             # but don't arrange files into directories
 s3role_create.py            # Python3 script to create AWS S3 bucket
                             # with IAM policy and IAM role
-s3role_delete.py            # Python3 script to delete AWS S3 bucket with files
+s3role_delete.py [bucket_name]           # Python3 script to delete AWS S3
                             # and after that delete IAM policy and IAM role
 ```
