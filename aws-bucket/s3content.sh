@@ -1,5 +1,5 @@
 #!/bin/bash
-# The script to check the content of the AWS S3 bucket $1
+# The scriptto check the content of the AWS S3 bucket $1
 
 # Check if the bucket name is provided
 if [ -z "$1" ]; then

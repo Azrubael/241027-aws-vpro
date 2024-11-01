@@ -11,4 +11,8 @@ s3upload.sh [bucket_name]   # Upload predefined files to AWS S3 [bucket_name]
                             # and arrange files into directories
 s3upload_flat.sh            # Upload predefined files to AWS S3 [bucket_name]
                             # but don't arrange files into directories
+s3role_create.py            # Python3 script to create AWS S3 bucket
+                            # with IAM policy and IAM role
+s3role_delete.py            # Python3 script to delete AWS S3 bucket with files
+                            # and after that delete IAM policy and IAM role
 ```

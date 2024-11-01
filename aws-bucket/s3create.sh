@@ -1,5 +1,5 @@
 #!/bin/bash
-# The script to create a new AWS S3 bucket with the predefined name pattern
+# The scriptto create a new AWS S3 bucket with the predefined name pattern
 
 # Set your desired bucket name
 BUCKET_NAME="az-$(date +%Y%m%d)"
