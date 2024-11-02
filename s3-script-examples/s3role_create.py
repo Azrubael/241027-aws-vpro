@@ -3,6 +3,8 @@
 This script creates an S3 bucket with a predefined name pattern,
 an IAM role, and a policy for accessing S3 in the 'DEFAULT-VPC' network,
 and uploads a few files to it.
+
+                !!! WITHOUT handling the policy !!!
 """
 
 import boto3
