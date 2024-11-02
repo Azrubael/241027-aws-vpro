@@ -23,5 +23,5 @@ for script in clean_order:
     if result.stderr:
         print(f"Script {script} Error:\n", result.stderr)
 
-print("\n +++ The SANDBOX cleaned successfully +++ ")
+print("\n --- Cleaning of SANDBOX finished --- ")
 

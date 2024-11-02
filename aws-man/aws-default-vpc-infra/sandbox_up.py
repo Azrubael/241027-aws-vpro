@@ -24,4 +24,4 @@ for script in deploy_order:
     if result.stderr:
         print(f"Script {script} Error:\n", result.stderr)
 
-print("\n === The deployment of SANDBOX executed successfully === ")
+print("\n +++ The deployment of SANDBOX complete +++ ")
