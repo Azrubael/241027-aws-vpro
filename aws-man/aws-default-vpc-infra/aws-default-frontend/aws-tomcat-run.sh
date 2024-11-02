@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ../sandbox_env
+source ./sandbox_env
 S3_URL="https://az-20241029.s3.us-east-1.amazonaws.com"
 SUBNET=$FRONTEND_NAME
 
@@ -37,6 +37,7 @@ aws ec2 run-instances \
             \"DeviceIndex\":0,
             \"Groups\":[\"$FRONTEND_SG_ID\"]
         }" \
+    --iam-instance-profile Name="EC2S3AccessRole" \
     --credit-specification '{"CpuCredits":"standard"}' \
     --tag-specifications '{"ResourceType":"instance","Tags":[{"Key":"Name","Value":"app01"},{"Key":"Server","Value":"TomCat"}]}' \
     --metadata-options '{"HttpEndpoint":"enabled","HttpPutResponseHopLimit":2,"HttpTokens":"optional"}' \

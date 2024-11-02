@@ -12,7 +12,7 @@ INSTANCE_IDS=$(aws ec2 describe-instances \
 
 # Check if there were found any
 if [ -z "$INSTANCE_IDS" ]; then
-    echo "The instances with the tag $TAG_KEY=$TAG_VALUE didn't find."
+    echo "The instances with the tag $TAG_KEY=$TAG_VALUE not found."
     exit 0
 fi
 
