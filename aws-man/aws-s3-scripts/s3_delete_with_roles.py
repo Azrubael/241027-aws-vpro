@@ -8,7 +8,7 @@ python delete_resources.py <bucket_name>
 import boto3
 import os
 from dotenv import load_dotenv
-from s3_create_with_roles import check_s3_bucket_exists
+from s3_provide_with_roles import check_s3_bucket_exists
 
 
 # Delete the IAM policy from the role

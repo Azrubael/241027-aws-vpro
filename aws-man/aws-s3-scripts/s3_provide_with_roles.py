@@ -104,13 +104,14 @@ if __name__ == "__main__":
     bucket_name= os.environ.get('BUCKET_NAME')
     region = os.environ.get('BUCKET_REGION')
 
+    user_name = os.environ.get('AWS_USER_NAME')
     role_name = os.environ.get('BUCKET_ROLE_NAME')
     policy_name = os.environ.get('BUCKET_POLICY_NAME')
     files = [
         "artifact/vpro.zip",
         "artifact/vpro.z01",
         "artifact/vpro.z02",
-        "env/db_env",
+        ".env/db_env",              # deletele the dot
         "aws-vm/application.properties",
         "aws-vm/1-mysql.sh",
         "aws-vm/2-memcached.sh",
@@ -138,11 +139,32 @@ if __name__ == "__main__":
         "Statement": [
             {
                 "Effect": "Allow",
-                "Principal": "*",
+                "Principal": {
+                    "AWS": f"arn:aws:iam::{account_id}:user/{user_name}"
+                },
                 "Action": [
                     "s3:GetObject",
                     "s3:PutObject",
                     "s3:DeleteObject",
+                    "s3:ListBucket",
+                    "s3:GetBucketLocation",
+                    "s3:PutObjectAcl",
+                    "s3:GetObjectAcl",
+                    "s3:DeleteBucket",
+
+                ],
+                "Resource": [
+                    f"arn:aws:s3:::{bucket_name}",
+                    f"arn:aws:s3:::{bucket_name}/*"
+                ],
+            },
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": "ec2.amazonaws.com"
+                },
+                "Action": [
+                    "s3:GetObject",
                     "s3:ListBucket"
                 ],
                 "Resource": [
@@ -167,18 +189,20 @@ if __name__ == "__main__":
             RoleName=role_name,
             AssumeRolePolicyDocument=json.dumps(trust_policy)
         )
+        print(f"Role '{role_name}' created.")
     else:
         print(f"Role '{role_name}' already exists.")
 
-    # Create the S3 policy for accessing S3
-    s3_policy = {
+    # Create the IAM policy for accessing S3
+    iam_policy = {
         "Version": "2012-10-17",
         "Statement": [
             {
                 "Effect": "Allow",
                 "Action": [
-                    "s3:GetObject",
-                    "s3:ListBucket"
+                    "s3:Get*",
+                    "s3:List*",
+                    "s3:Describe*"
                 ],
                 "Resource": [
                     f"arn:aws:s3:::{bucket_name}",
@@ -193,8 +217,9 @@ if __name__ == "__main__":
         iam_client.put_role_policy(
             RoleName=role_name,
             PolicyName=policy_name,
-            PolicyDocument=json.dumps(s3_policy)
+            PolicyDocument=json.dumps(iam_policy)
         )
+        print(f"Policy '{policy_name}' added to role '{role_name}'.")
     else:
         print(f"Policy '{policy_name}' already exists for role '{role_name}'.")
 
