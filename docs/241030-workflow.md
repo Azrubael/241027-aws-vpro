@@ -136,3 +136,5 @@ aws iam get-instance-profile --instance-profile-name "<EC2S3ReadOnlyProfile>"
 ```bash
 aws sts get-caller-identity
 ```
+9. Читать подробнее
+https://repost.aws/knowledge-center/ec2-instance-access-s3-bucket

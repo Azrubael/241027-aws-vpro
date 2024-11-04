@@ -1,8 +1,8 @@
 #!/bin/bash
 # The script to run a MySQL server on an Amazon Linux 2 instance
 
-source ../sandbox_env
-S3_SCRIPT_URL="https://az-20241029.s3.us-east-1.amazonaws.com/1-mysql.sh"
+source ./sandbox_env
+source "/home/vagrant/.aws/devops_id"
 SUBNET=$BACKEND_NAME
 TARGET_IP=$DATABASE_IP
 
@@ -17,13 +17,15 @@ SUBNET_ID=$(aws ec2 describe-subnets --filters Name=tag:Name,Values=$SUBNET --qu
 BACKEND_SG_ID=$(aws ec2 describe-security-groups --filters Name=group-name,Values=$BACKEND_SG --query 'SecurityGroups[*].GroupId' --output text)
 
 USER_DATA_SCRIPT="#!/bin/bash
-curl -O $S3_SCRIPT_URL
+mkdir -p /tmp/provisioning
+cd /tmp/provisioning
+aws s3 cp s3://${BUCKET_NAME}/aws-vm/1-mysql.sh .
 bash 1-mysql.sh"
 
 USER_DATA_ENCODED=$(echo "$USER_DATA_SCRIPT" | base64)
 
 aws ec2 run-instances \
-    --image-id "ami-0ddc798b3f1a5117e" \
+    --image-id "ami-06b21ccaeff8cd686" \
     --instance-type "t2.micro" \
     --key-name "vpro-key" \
     --network-interfaces "{
@@ -33,10 +35,16 @@ aws ec2 run-instances \
             \"Groups\":[\"$BACKEND_SG_ID\"],
             \"PrivateIpAddress\":\"$TARGET_IP\"
         }" \
+    --iam-instance-profile Name="$INSTANCE_PROFILE_NAME" \
     --credit-specification '{"CpuCredits":"standard"}' \
     --tag-specifications '{"ResourceType":"instance","Tags":[{"Key":"Name","Value":"db01"},{"Key":"Server","Value":"MySQL"}]}' \
     --metadata-options '{"HttpEndpoint":"enabled","HttpPutResponseHopLimit":2,"HttpTokens":"optional"}' \
     --private-dns-name-options '{"HostnameType":"ip-name","EnableResourceNameDnsARecord":false,"EnableResourceNameDnsAAAARecord":false}' \
     --count "1" \
-    --user-data "$USER_DATA_ENCODED" && \
-echo "Success!"
+    --user-data "$USER_DATA_ENCODED" &&
+
+if [ $? -eq 0 ]; then
+    echo "An EC2 instance of MySQL server is running."
+else
+    echo "Something went wrong with MySQL server."
+fi

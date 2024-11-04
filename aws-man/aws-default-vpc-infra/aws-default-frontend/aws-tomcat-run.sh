@@ -3,7 +3,6 @@
 source ./sandbox_env
 source "/home/vagrant/.aws/devops_id"
 # source "${HOME}/.aws/devops_id"
-S3_URL="https://${BUCKET_NAME}.s3.${BUCKET_REGION}.amazonaws.com"
 SUBNET=$FRONTEND_NAME
 
 CUSTOM_IPs="### custom IPs
@@ -20,17 +19,17 @@ USER_DATA_SCRIPT="#!/bin/bash
 sudo echo $CUSTOM_IPs >> /etc/hosts
 mkdir -p /tmp/provisioning
 cd /tmp/provisioning
-curl -O $S3_URL/aws-vm/4-tomcat.sh
-curl -O $S3_URL/aws-wm/application.properties
-curl -O $S3_URL/artifact/vpro.zip
-curl -O $S3_URL/artifact/vpro.z01
-curl -O $S3_URL/artifact/vpro.z02
+aws s3 cp s3://${BUCKET_NAME}/aws-vm/4-tomcat.sh .
+aws s3 cp s3://${BUCKET_NAME}/aws-wm/application.properties .
+aws s3 cp  s3://${BUCKET_NAME}/artifact/vpro.zip .
+aws s3 cp  s3://${BUCKET_NAME}/artifact/vpro.z01 .
+aws s3 cp  s3://${BUCKET_NAME}/artifact/vpro.z02 .
 bash 4-tomcat.sh"
 
 USER_DATA_ENCODED=$(echo "$USER_DATA_SCRIPT" | base64)
 
 aws ec2 run-instances \
-    --image-id "ami-0ddc798b3f1a5117e" \
+    --image-id "ami-06b21ccaeff8cd686" \
     --instance-type "t2.micro" \
     --key-name "vpro-key" \
     --network-interfaces "{
@@ -48,7 +47,7 @@ aws ec2 run-instances \
     --user-data "$USER_DATA_ENCODED"
 
 if [ $? -eq 0 ]; then
-    echo "An EC2 instance of TomCat is running."
+    echo "An EC2 instance of TomCat server is running."
 else
-    echo "Something went wrong."
+    echo "Something went wrong TomCat server."
 fi
