@@ -1,7 +1,8 @@
 #!/bin/bash
 
 source ./sandbox_env
-S3_URL="https://az-20241029.s3.us-east-1.amazonaws.com"
+source "${HOME}/.aws/devops_id"
+S3_URL="https://${BUCKET_NAME}.s3.${BUCKET_REGION}.amazonaws.com"
 SUBNET=$FRONTEND_NAME
 
 CUSTOM_IPs="### custom IPs
@@ -37,11 +38,16 @@ aws ec2 run-instances \
             \"DeviceIndex\":0,
             \"Groups\":[\"$FRONTEND_SG_ID\"]
         }" \
-    --iam-instance-profile Name="EC2S3AccessRole" \
+    --iam-instance-profile Name="$EC2S3ReadOnlyProfile" \
     --credit-specification '{"CpuCredits":"standard"}' \
     --tag-specifications '{"ResourceType":"instance","Tags":[{"Key":"Name","Value":"app01"},{"Key":"Server","Value":"TomCat"}]}' \
     --metadata-options '{"HttpEndpoint":"enabled","HttpPutResponseHopLimit":2,"HttpTokens":"optional"}' \
     --private-dns-name-options '{"HostnameType":"ip-name","EnableResourceNameDnsARecord":false,"EnableResourceNameDnsAAAARecord":false}' \
     --count "1" \
-    --user-data "$USER_DATA_ENCODED" && \
-echo "Success!"
+    --user-data "$USER_DATA_ENCODED"
+
+if [ $? -eq 0 ]; then
+    echo "An EC2 instance of TomCat is running."
+else
+    echo "Something went wrong."
+fi

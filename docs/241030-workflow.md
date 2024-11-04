@@ -91,3 +91,48 @@
 ```
 6. *Сохранить изменения*
 
+7. Проверить профили политик безопасности
+```bash
+aws iam list-instance-profiles
+# OR
+aws iam get-instance-profile --instance-profile-name "<EC2S3ReadOnlyProfile>"
+```
+```json
+{
+    "InstanceProfiles": [
+        {
+            "Path": "/",
+            "InstanceProfileName": "<EC2S3ReadOnlyProfile>",
+            "InstanceProfileId": "AIPAWX2IF7UXVWEUQATS4",
+            "Arn": "arn:aws:iam::<ACCOUNT_ID>:instance-profile/<EC2S3ReadOnlyProfile>",
+            "CreateDate": "2024-11-04T09:06:55+00:00",
+            "Roles": [
+                {
+                    "Path": "/",
+                    "RoleName": "EC2S3ReadOnlyRole",
+                    "RoleId": "AROAWX2IF7UX3PDDGVLWR",
+                    "Arn": "arn:aws:iam::<ACCOUNT_ID>:role/<EC2S3ReadOnlyRole>",
+                    "CreateDate": "2024-11-04T09:05:07+00:00",
+                    "AssumeRolePolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Principal": {
+                                    "Service": "ec2.amazonaws.com"
+                                },
+                                "Action": "sts:AssumeRole"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}
+```
+
+8. Проверить текущего активного пользователя AWS через awscli:
+```bash
+aws sts get-caller-identity
+```

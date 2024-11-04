@@ -111,7 +111,7 @@ if __name__ == "__main__":
         "artifact/vpro.zip",
         "artifact/vpro.z01",
         "artifact/vpro.z02",
-        ".env/db_env",              # deletele the dot
+        "env/db_env",              # deletele the dot
         "aws-vm/application.properties",
         "aws-vm/1-mysql.sh",
         "aws-vm/2-memcached.sh",
@@ -137,27 +137,26 @@ if __name__ == "__main__":
     bucket_policy = {
         "Version": "2012-10-17",
         "Statement": [
-            {
-                "Effect": "Allow",
-                "Principal": {
-                    "AWS": f"arn:aws:iam::{account_id}:user/{user_name}"
-                },
-                "Action": [
-                    "s3:GetObject",
-                    "s3:PutObject",
-                    "s3:DeleteObject",
-                    "s3:ListBucket",
-                    "s3:GetBucketLocation",
-                    "s3:PutObjectAcl",
-                    "s3:GetObjectAcl",
-                    "s3:DeleteBucket",
-
-                ],
-                "Resource": [
-                    f"arn:aws:s3:::{bucket_name}",
-                    f"arn:aws:s3:::{bucket_name}/*"
-                ],
-            },
+            # {
+            #     "Effect": "Allow",
+            #     "Principal": {
+            #         "AWS": f"arn:aws:iam::{account_id}:user/{user_name}"
+            #     },
+            #     "Action": [
+            #         "s3:GetObject",
+            #         "s3:PutObject",
+            #         "s3:DeleteObject",
+            #         "s3:ListBucket",
+            #         "s3:GetBucketLocation",
+            #         "s3:PutObjectAcl",
+            #         "s3:GetObjectAcl",
+            #         "s3:DeleteBucket"
+            #     ],
+            #     "Resource": [
+            #         f"arn:aws:s3:::{bucket_name}",
+            #         f"arn:aws:s3:::{bucket_name}/*"
+            #     ],
+            # },
             {
                 "Effect": "Allow",
                 "Principal": {
@@ -200,9 +199,8 @@ if __name__ == "__main__":
             {
                 "Effect": "Allow",
                 "Action": [
-                    "s3:Get*",
-                    "s3:List*",
-                    "s3:Describe*"
+                    "s3:GetObject",
+                    "s3:ListBucket"
                 ],
                 "Resource": [
                     f"arn:aws:s3:::{bucket_name}",
