@@ -38,7 +38,8 @@ aws ec2 run-instances \
             \"DeviceIndex\":0,
             \"Groups\":[\"$FRONTEND_SG_ID\"]
         }" \
-    --iam-instance-profile Name="$EC2S3ReadOnlyProfile" \
+    --region "$BUCKET_REGION"
+    --iam-instance-profile Name="$INSTANCE_PROFILE_NAME" \
     --credit-specification '{"CpuCredits":"standard"}' \
     --tag-specifications '{"ResourceType":"instance","Tags":[{"Key":"Name","Value":"app01"},{"Key":"Server","Value":"TomCat"}]}' \
     --metadata-options '{"HttpEndpoint":"enabled","HttpPutResponseHopLimit":2,"HttpTokens":"optional"}' \

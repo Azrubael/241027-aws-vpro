@@ -1,6 +1,7 @@
 import subprocess
 
 deploy_order = [
+    '../aws-s3-scripts/s3_provide_with_roles.py',
     'aws-sandbox-subnets/sandbox_subnets_tag.py',
     'aws-sandbox-subnets/sandbox_sg_create.py',
     # 'aws-default-backend/aws-mysql-run.sh',

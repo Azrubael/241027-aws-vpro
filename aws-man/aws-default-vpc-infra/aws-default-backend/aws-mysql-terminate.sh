@@ -9,7 +9,7 @@ INSTANCE_IDS=$(aws ec2 describe-instances \
 
 # Check if there were found any
 if [ -z "$INSTANCE_IDS" ]; then
-    echo "The instances with the tag 'Server=MySQL' didn't find."
+    echo "The instances with the tag 'Server=MySQL' not fount."
     exit 0
 fi
 
