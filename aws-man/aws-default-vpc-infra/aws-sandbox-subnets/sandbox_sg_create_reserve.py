@@ -115,6 +115,7 @@ def check_aws_sg_exists(sg_name, vpc_id, ec2_client):
 def create_instance_profile_and_add_role(instance_profile_name, role_name, iam_client):
     """
     Creates an instance profile and adds a role to it.
+
     If the instance profile does not exist, it will be created.
     If the instance profile already exists, the function will exit early.
 
@@ -155,6 +156,7 @@ def main():
     load_dotenv(dotenv_path='./subnets_env')
     vpc_name = os.getenv('VPC_NAME')
     frontend_cidr = os.getenv('FRONTEND_CIDR')
+    frontend_name = os.getenv('FRONTEND_NAME')
     frontend_sg = os.getenv('FRONTEND_SG')
     fsg_note = os.getenv('FRONTEND_SG_NOTE')
     frontend_rules = [
@@ -165,6 +167,8 @@ def main():
         { "protocol" : os.getenv('FRONTEND_PROTOCOL3'),
           "port" : os.getenv('FRONTEND_PORT3') }
     ]
+    backend_cidr = os.getenv('BACKEND_CIDR')
+    backend_name = os.getenv('BACKEND_NAME')
     backend_sg = os.getenv('BACKEND_SG')
     bsg_note = os.getenv('FRONTEND_SG_NOTE')
     backend_rules = [
@@ -179,6 +183,9 @@ def main():
     ]
 
     load_dotenv(dotenv_path=f'{os.environ.get("HOME")}/.aws/devops_id')
+    account_id = os.environ.get('AWSN')
+    bucket_name= os.environ.get('BUCKET_NAME')
+    region = os.environ.get('BUCKET_REGION')
     role_name = os.environ.get('BUCKET_ROLE_NAME')
     instance_profile_name = os.environ.get('INSTANCE_PROFILE_NAME')
 
@@ -195,6 +202,7 @@ def main():
         for rule in backend_rules:
             authorize_ec2_security_group_ingress(backend_sg_id, rule['protocol'], rule['port'], frontend_cidr, ec2_client)
 
+    # Create the Instance Profile and add the Role to it if it doesn't exist
     create_instance_profile_and_add_role(instance_profile_name, role_name, boto3.client('iam'))
 
     print("\n+++ The security groups has created +++\n")

@@ -1,7 +1,7 @@
 import subprocess
 
 deploy_order = [
-    '../aws-s3-scripts/s3_provide_with_roles.py',
+    'aws-s3-default/s3_provide_with_roles.py',
     'aws-sandbox-subnets/sandbox_subnets_tag.py',
     'aws-sandbox-subnets/sandbox_sg_create.py',
     # 'aws-default-backend/aws-mysql-run.sh',
@@ -25,4 +25,4 @@ for script in deploy_order:
     if result.stderr:
         print(f"Script {script} Error:\n", result.stderr)
 
-print("\n +++ The deployment of SANDBOX complete +++ ")
+print(" +++ The deployment of SANDBOX has completed. +++ ")

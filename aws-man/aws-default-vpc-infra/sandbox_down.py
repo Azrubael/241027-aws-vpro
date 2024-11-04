@@ -6,7 +6,7 @@ clean_order = [
     #'aws-default-backend/aws-memcache-terminate.sh',
     #'aws-default-backend/aws-rabbitmq-terminate.sh',
     'aws-sandbox-subnets/sandbox_sg_delete.py',
-    '../aws-s3-scripts/s3_delete_with_roles.py',
+    'aws-s3-default/s3_delete_with_roles.py',
 ]
 interpreter = None
 
@@ -24,5 +24,5 @@ for script in clean_order:
     if result.stderr:
         print(f"Script {script} Error:\n", result.stderr)
 
-print("\n --- Cleaning of SANDBOX has finished --- ")
+print(" --- Cleaning of SANDBOX has finished. --- ")
 

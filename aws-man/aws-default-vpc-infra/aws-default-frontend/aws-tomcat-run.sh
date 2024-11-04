@@ -1,7 +1,8 @@
 #!/bin/bash
 
 source ./sandbox_env
-source "${HOME}/.aws/devops_id"
+source "/home/vagrant/.aws/devops_id"
+# source "${HOME}/.aws/devops_id"
 S3_URL="https://${BUCKET_NAME}.s3.${BUCKET_REGION}.amazonaws.com"
 SUBNET=$FRONTEND_NAME
 
@@ -38,7 +39,6 @@ aws ec2 run-instances \
             \"DeviceIndex\":0,
             \"Groups\":[\"$FRONTEND_SG_ID\"]
         }" \
-    --region "$BUCKET_REGION"
     --iam-instance-profile Name="$INSTANCE_PROFILE_NAME" \
     --credit-specification '{"CpuCredits":"standard"}' \
     --tag-specifications '{"ResourceType":"instance","Tags":[{"Key":"Name","Value":"app01"},{"Key":"Server","Value":"TomCat"}]}' \
