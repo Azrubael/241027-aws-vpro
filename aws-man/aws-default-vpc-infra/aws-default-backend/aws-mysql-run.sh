@@ -2,7 +2,6 @@
 # The script to run a MySQL server on an Amazon Linux 2 instance
 
 source ./sandbox_env
-source "/home/vagrant/.aws/devops_id"
 SUBNET=$BACKEND_NAME
 TARGET_IP=$DATABASE_IP
 

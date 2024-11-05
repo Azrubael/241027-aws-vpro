@@ -1,8 +1,6 @@
 #!/bin/bash
 
 source ./sandbox_env
-source "/home/vagrant/.aws/devops_id"
-# source "${HOME}/.aws/devops_id"
 SUBNET=$FRONTEND_NAME
 
 CUSTOM_IPs="### custom IPs
@@ -21,9 +19,9 @@ mkdir -p /tmp/provisioning
 cd /tmp/provisioning
 aws s3 cp s3://${BUCKET_NAME}/aws-vm/4-tomcat.sh .
 aws s3 cp s3://${BUCKET_NAME}/aws-wm/application.properties .
-aws s3 cp  s3://${BUCKET_NAME}/artifact/vpro.zip .
-aws s3 cp  s3://${BUCKET_NAME}/artifact/vpro.z01 .
-aws s3 cp  s3://${BUCKET_NAME}/artifact/vpro.z02 .
+aws s3 cp s3://${BUCKET_NAME}/artifact/vpro.zip .
+aws s3 cp s3://${BUCKET_NAME}/artifact/vpro.z01 .
+aws s3 cp s3://${BUCKET_NAME}/artifact/vpro.z02 .
 bash 4-tomcat.sh"
 
 USER_DATA_ENCODED=$(echo "$USER_DATA_SCRIPT" | base64)

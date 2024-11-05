@@ -12,7 +12,8 @@ from s3_provide_with_roles import check_s3_bucket_exists
 
 
 # Delete the IAM policy from the role
-def delete_s3_bucket_policy(role_name, policy_name, iam_client):
+def delete_s3_bucket_policy(role_name: str, policy_name: str, iam_client: boto3.client) -> None:
+    """Deletes an IAM policy from an IAM role."""
     try:
         iam_client.delete_role_policy(
             RoleName=role_name,
@@ -24,7 +25,8 @@ def delete_s3_bucket_policy(role_name, policy_name, iam_client):
 
 
 # Delete the IAM role
-def delete_s3_bucket_role(role_name, iam_client):
+def delete_s3_bucket_role(role_name: str, iam_client: boto3.client) -> None:
+    """Deletes an IAM role."""
     try:
         iam_client.delete_role(RoleName=role_name)
         print(f"Role '{role_name}' deleted.")
@@ -35,7 +37,8 @@ def delete_s3_bucket_role(role_name, iam_client):
 
 
 # Delete all objects in the bucket before deleting the bucket
-def delete_s3_bucket_contents(bucket_name):
+def delete_s3_bucket_contents(bucket_name: str, s3_client: boto3.client) -> None:
+    """Deletes all objects in an S3 bucket."""
     try:
         objects = s3_client.list_objects_v2(Bucket=bucket_name)
         if 'Contents' in objects:
@@ -49,9 +52,10 @@ def delete_s3_bucket_contents(bucket_name):
 
 
 # Delete the S3 bucket
-def delete_s3_bucket(bucket_name, s3_client):
+def delete_s3_bucket(bucket_name: str, s3_client: boto3.client) -> None:
+    """Deletes an S3 bucket and all objects in it."""
     try:
-        delete_s3_bucket_contents(bucket_name)
+        delete_s3_bucket_contents(bucket_name, s3_client)
         s3_client.delete_bucket(Bucket=bucket_name)
         print(f"Bucket '{bucket_name}' deleted.")
     except s3_client.exceptions.NoSuchBucket:
@@ -60,9 +64,18 @@ def delete_s3_bucket(bucket_name, s3_client):
         print(f"Error deleting bucket '{bucket_name}': {e}")
 
 
-if __name__ == "__main__":
-    load_dotenv(dotenv_path=f'{os.environ.get("HOME")}/.aws/devops_id')
+def main() -> None:
+    """
+    Main entry point for the script.
 
+    This script deletes the IAM role, policy, and all objects in the bucket
+    before deleting the bucket itself.
+    
+    AWS services involved:
+    - S3: For creating and managing buckets.
+    - IAM: For managing roles and instance profiles.
+    """
+    load_dotenv(dotenv_path='./sandbox_env')
     bucket_name= os.environ.get('BUCKET_NAME')
     region = os.environ.get('BUCKET_REGION')
     role_name = os.environ.get('BUCKET_ROLE_NAME')
@@ -80,4 +93,8 @@ if __name__ == "__main__":
     else:
         print(f"Bucket '{bucket_name}' does not exist.")
 
-    print("--- The script has completed. ---")
+    print("--- The script has completed. ---")    
+
+
+if __name__ == "__main__":
+    main()

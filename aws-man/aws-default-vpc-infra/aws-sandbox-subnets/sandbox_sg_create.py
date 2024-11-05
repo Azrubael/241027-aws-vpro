@@ -6,11 +6,12 @@ in the 'DEFAULT-VPC' network
 import os
 import boto3
 from botocore.exceptions import ClientError
+from typing import Optional
 from dotenv import load_dotenv
 from sandbox_subnets_tag import get_vpc_id_by_tag
 
 
-def create_ec2_security_group(group_name, description, vpc_id, ec2_client):
+def create_ec2_security_group(group_name: str, description: str, vpc_id: str, ec2_client: boto3.client) -> Optional[str]:
     """
     Creates a security group in a specified VPC.
 
@@ -33,7 +34,7 @@ def create_ec2_security_group(group_name, description, vpc_id, ec2_client):
         return None
 
 
-def convert_port_to_int(value):
+def convert_port_to_int(value: str) -> Optional[int]:
     """
     Converts a string to an integer, handling exceptions if the conversion fails.
 
@@ -50,7 +51,7 @@ def convert_port_to_int(value):
         return None
 
 
-def authorize_ec2_security_group_ingress(group_id, protocol, port, cidr, ec2_client):
+def authorize_ec2_security_group_ingress(group_id: str, protocol: str, port: str, cidr: str, ec2_client: boto3.client) -> Optional[dict]:
     """
     Authorizes ingress traffic for a ec2 security group.
 
@@ -82,7 +83,7 @@ def authorize_ec2_security_group_ingress(group_id, protocol, port, cidr, ec2_cli
         print("Error:", e)
 
 
-def check_aws_sg_exists(sg_name, vpc_id, ec2_client):
+def check_aws_sg_exists(sg_name: str, vpc_id: str, ec2_client: boto3.client) -> bool:
     """
     Checks if a security group with the specified name exists in the given VPC.
 
@@ -112,7 +113,7 @@ def check_aws_sg_exists(sg_name, vpc_id, ec2_client):
         return False
 
 
-def create_instance_profile_and_add_role(instance_profile_name, role_name, iam_client):
+def create_instance_profile_and_add_role(instance_profile_name: str, role_name: str, iam_client: boto3.client) -> None:
     """
     Creates an instance profile and adds a role to it.
     If the instance profile does not exist, it will be created.
@@ -149,10 +150,38 @@ def create_instance_profile_and_add_role(instance_profile_name, role_name, iam_c
         print(f"Error: {e}")
 
 
-def main():
+def main() -> None:
+    """
+    Main function to create security groups and instance profiles in the 'DEFAULT-VPC' network.
+
+    This function loads environment variables, checks for the existence of specified security groups
+    in a VPC, creates them if they do not exist, and authorizes ingress rules for each security group.
+    It also creates an instance profile and adds a role to it.
+
+    Environment variables used:
+    - VPC_NAME: The name of the VPC.
+    - FRONTEND_CIDR: CIDR block for the frontend.
+    - FRONTEND_SG: Name of the frontend security group.
+    - FRONTEND_SG_NOTE: Description for the frontend security group.
+    - FRONTEND_PROTOCOL1, FRONTEND_PORT1: Protocol and port for the first frontend rule.
+    - FRONTEND_PROTOCOL2, FRONTEND_PORT2: Protocol and port for the second frontend rule.
+    - FRONTEND_PROTOCOL3, FRONTEND_PORT3: Protocol and port for the third frontend rule.
+    - BACKEND_SG: Name of the backend security group.
+    - FRONTEND_SG_NOTE: Description for the backend security group.
+    - BACKEND_PROTOCOL1, BACKEND_PORT1: Protocol and port for the first backend rule.
+    - BACKEND_PROTOCOL2, BACKEND_PORT2: Protocol and port for the second backend rule.
+    - BACKEND_PROTOCOL3, BACKEND_PORT3: Protocol and port for the third backend rule.
+    - BACKEND_PROTOCOL4, BACKEND_PORT4: Protocol and port for the fourth backend rule.
+    - BUCKET_ROLE_NAME: Name of the IAM role for the bucket.
+    - INSTANCE_PROFILE_NAME: Name of the instance profile.
+
+    AWS services involved:
+    - EC2: For creating and managing security groups.
+    - IAM: For managing roles and instance profiles.
+    """
     wan = "0.0.0.0/0"
 
-    load_dotenv(dotenv_path='./subnets_env')
+    load_dotenv(dotenv_path='./sandbox_env')
     vpc_name = os.getenv('VPC_NAME')
     frontend_cidr = os.getenv('FRONTEND_CIDR')
     frontend_sg = os.getenv('FRONTEND_SG')
@@ -178,12 +207,11 @@ def main():
           "port" : os.getenv('BACKEND_PORT4') }
     ]
 
-    load_dotenv(dotenv_path=f'{os.environ.get("HOME")}/.aws/devops_id')
     role_name = os.environ.get('BUCKET_ROLE_NAME')
     instance_profile_name = os.environ.get('INSTANCE_PROFILE_NAME')
 
-    vpc_id = get_vpc_id_by_tag(vpc_name)
     ec2_client = boto3.client('ec2')
+    vpc_id = get_vpc_id_by_tag(vpc_name, ec2_client)
 
     if not check_aws_sg_exists(frontend_sg, vpc_id, ec2_client):
         frontend_sg_id = create_ec2_security_group(frontend_sg, fsg_note, vpc_id, ec2_client)

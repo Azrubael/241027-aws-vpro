@@ -4,7 +4,7 @@ deploy_order = [
     'aws-s3-default/s3_provide_with_roles.py',
     'aws-sandbox-subnets/sandbox_subnets_tag.py',
     'aws-sandbox-subnets/sandbox_sg_create.py',
-    # 'aws-default-backend/aws-mysql-run.sh',
+    'aws-default-backend/aws-mysql-run.sh',
     #'aws-default-backend/aws-memcache-run.sh',
     #'aws-default-backend/aws-rabbitmq-run.sh',
     'aws-default-frontend/aws-tomcat-run.sh'

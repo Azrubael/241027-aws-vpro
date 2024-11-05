@@ -6,7 +6,6 @@ and uploads a few files to it.
 """
 
 import boto3
-# import datetime
 import os
 import json
 from botocore.exceptions import ClientError
@@ -14,7 +13,7 @@ from dotenv import load_dotenv
 
 
 # Check if the IAM role exists
-def role_exists(role_name, iam_client):
+def role_exists(role_name: str, iam_client: boto3.client) -> bool:
     """
     Checks if an IAM role with the specified name exists.
     """
@@ -26,7 +25,7 @@ def role_exists(role_name, iam_client):
 
 
 # Check if the IAM policy exists
-def policy_exists(role_name, policy_name, iam_client):
+def policy_exists(role_name: str, policy_name: str, iam_client: boto3.client) -> bool:
     """
     Checks if a specific IAM policy exists for a given IAM role.
 
@@ -47,7 +46,7 @@ def policy_exists(role_name, policy_name, iam_client):
         return False
 
 
-def check_s3_bucket_exists(bucket_name, s3_client):
+def check_s3_bucket_exists(bucket_name: str, s3_client: boto3.client) -> bool:
     """
     Check if an S3 bucket with the given name exists.
 
@@ -66,7 +65,7 @@ def check_s3_bucket_exists(bucket_name, s3_client):
         raise
 
 
-def create_s3_bucket_with_policy(bucket_name, bucket_policy, s3_client):
+def create_s3_bucket_with_policy(bucket_name: str, bucket_policy: dict, s3_client: boto3.client) -> None:
     """
     Creates an S3 bucket and sets the specified bucket policy on it.
 
@@ -100,18 +99,17 @@ def create_s3_bucket_with_policy(bucket_name, bucket_policy, s3_client):
 if __name__ == "__main__":
     load_dotenv(dotenv_path=f'{os.environ.get("HOME")}/.aws/devops_id')
     account_id = os.environ.get('AWSN')
-    # bucket_name = f"az-{datetime.datetime.now().strftime('%Y%m%d')}"
+    load_dotenv(dotenv_path='./sandbox_env')
     bucket_name= os.environ.get('BUCKET_NAME')
     region = os.environ.get('BUCKET_REGION')
 
-    user_name = os.environ.get('AWS_USER_NAME')
     role_name = os.environ.get('BUCKET_ROLE_NAME')
     policy_name = os.environ.get('BUCKET_POLICY_NAME')
     files = [
         "artifact/vpro.zip",
         "artifact/vpro.z01",
         "artifact/vpro.z02",
-        "env/db_env",              # deletele the dot
+        "env/db_env",              # !!! deletele the dot
         "aws-vm/application.properties",
         "aws-vm/1-mysql.sh",
         "aws-vm/2-memcached.sh",

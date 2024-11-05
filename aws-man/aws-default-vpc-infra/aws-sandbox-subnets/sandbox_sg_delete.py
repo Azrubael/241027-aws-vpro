@@ -5,11 +5,12 @@
 import os
 import boto3
 from botocore.exceptions import ClientError
+from typing import Optional
 from dotenv import load_dotenv
 import time
 
 
-def get_subnet_id_by_name(name, ec2_client):
+def get_subnet_id_by_name(name: str, ec2_client: boto3.client) -> Optional[str]:
     """Get the subnet ID by its name tag."""
     response = ec2_client.describe_subnets(
         Filters=[{'Name': 'tag:Name', 'Values': [name]}]
@@ -20,7 +21,7 @@ def get_subnet_id_by_name(name, ec2_client):
     return None
 
 
-def get_security_group_id_by_name(name, ec2_client):
+def get_security_group_id_by_name(name: str, ec2_client: boto3.client) -> Optional[str]:
     """Get the security group ID by its name."""
     response = ec2_client.describe_security_groups(
         Filters=[{'Name': 'group-name', 'Values': [name]}]
@@ -31,7 +32,7 @@ def get_security_group_id_by_name(name, ec2_client):
     return None
 
 
-def delete_security_group(group_id, ec2_client):
+def delete_security_group(group_id: str, ec2_client: boto3.client) -> None:
     """Delete a security group by its ID."""
 
     try:
@@ -41,7 +42,7 @@ def delete_security_group(group_id, ec2_client):
         print(f"Error deleting security group {group_id}: {e}")
 
 
-def delete_instance_profile(instance_profile_name, iam_client):
+def delete_instance_profile(instance_profile_name: str, iam_client: boto3.client) -> None:
     """
     This function will delete an instance profile by its name.
     Before deleting the instance profile, it will remove all roles
@@ -80,7 +81,6 @@ def delete_instance_profile(instance_profile_name, iam_client):
 
 
 if __name__ == "__main__":
-
     load_dotenv(dotenv_path='./sandbox_env')
     frontend_name = os.getenv('FRONTEND_NAME')
     frontend_sg = os.getenv('FRONTEND_SG')
@@ -111,7 +111,6 @@ if __name__ == "__main__":
         delete_security_group(backend_sg_id, ec2_client)
         print(f"Deleted {backend_name} security group with ID: {backend_sg_id}")
 
-    load_dotenv(dotenv_path=f'{os.environ.get("HOME")}/.aws/devops_id')
     instance_profile_name = os.environ.get('INSTANCE_PROFILE_NAME')
     iam_client = boto3.client('iam')
     delete_instance_profile(instance_profile_name, iam_client)
