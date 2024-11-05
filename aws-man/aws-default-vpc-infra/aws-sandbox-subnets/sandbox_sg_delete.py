@@ -100,21 +100,22 @@ if __name__ == "__main__":
     print(f"Found {backend_name} with ID: {backend_id}. This is the default subnet for the 'DEFAULT-VPC' network.")
 
     frontend_sg_id = get_security_group_id_by_name(frontend_sg, ec2_client)
-    print(f"Found {frontend_sg_id} with ID: {frontend_sg_id}")
+    print(f"Found {frontend_sg} with ID: {frontend_sg_id}")
     backend_sg_id = get_security_group_id_by_name(backend_sg, ec2_client)
-    print(f"Found {backend_sg_id} with ID: {backend_sg_id}")
+    print(f"Found {backend_sg} with ID: {backend_sg_id}")
+
+
+    if backend_sg_id:
+        delete_security_group(backend_sg_id, ec2_client)
+        print(f"Deleted {backend_name} security group with ID: {backend_sg_id}")
 
     delay = 7
-    print(f"Waiting {delay} seconds before deleting security groups...")
+    print(f"Waiting {delay} seconds before deleting frontend...")
     time.sleep(delay)
 
     if frontend_sg_id:
         delete_security_group(frontend_sg_id, ec2_client)
         print(f"Deleted {frontend_name} security group with ID: {frontend_sg_id}")
-
-    if backend_sg_id:
-        delete_security_group(backend_sg_id, ec2_client)
-        print(f"Deleted {backend_name} security group with ID: {backend_sg_id}")
 
     instance_profile_name = os.environ.get('INSTANCE_PROFILE_NAME')
     iam_client = boto3.client('iam')
