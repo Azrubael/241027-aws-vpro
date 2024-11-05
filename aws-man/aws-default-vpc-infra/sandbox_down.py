@@ -1,4 +1,5 @@
 import subprocess
+import time
 
 clean_order = [
     'aws-default-frontend/aws-tomcat-terminate.sh',
@@ -13,6 +14,10 @@ interpreter = None
 for script in clean_order:
     if script.endswith('.py'):
         interpreter = 'python3'
+        if script.endswith('sandbox_sg_delete.py'):
+            delay = 10
+            print(f"Waiting {delay} seconds before deleting security elements...")
+            time.sleep(delay)
     elif script.endswith('.sh'):
         interpreter = 'bash'
     else:

@@ -59,10 +59,6 @@ def delete_instance_profile(instance_profile_name: str, iam_client: boto3.client
         # Check if the instance profile exists
         response = iam_client.get_instance_profile(InstanceProfileName=instance_profile_name)
         print(f"Instance profile '{instance_profile_name}' found. Proceeding to delete.")
-        
-        # Delete the instance profile
-        iam_client.delete_instance_profile(InstanceProfileName=instance_profile_name)
-        print(f"Instance profile '{instance_profile_name}' deleted successfully.")
 
         # Remove all roles from the instance profile
         roles = response['InstanceProfile']['Roles']
@@ -72,6 +68,15 @@ def delete_instance_profile(instance_profile_name: str, iam_client: boto3.client
                 RoleName=role['RoleName']
             )
             print(f"Removed role '{role['RoleName']}' from instance profile '{instance_profile_name}'.")
+
+        delay = 7
+        print(f"Waiting {delay} seconds before deleting the instance profile {instance_profile_name}...")
+        time.sleep(delay)
+
+        # Delete the instance profile
+        iam_client.delete_instance_profile(InstanceProfileName=instance_profile_name)
+        print(f"Instance profile '{instance_profile_name}' deleted successfully.")
+
 
     except ClientError as e:
         if e.response['Error']['Code'] == 'NoSuchEntity':
@@ -99,7 +104,7 @@ if __name__ == "__main__":
     backend_sg_id = get_security_group_id_by_name(backend_sg, ec2_client)
     print(f"Found {backend_sg_id} with ID: {backend_sg_id}")
 
-    delay = 15
+    delay = 7
     print(f"Waiting {delay} seconds before deleting security groups...")
     time.sleep(delay)
 
