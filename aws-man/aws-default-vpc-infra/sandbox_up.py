@@ -5,8 +5,8 @@ deploy_order = [
     'aws-sandbox-subnets/sandbox_subnets_tag.py',
     'aws-sandbox-subnets/sandbox_sg_create.py',
     'aws-default-backend/aws-mysql-run.sh',
-    #'aws-default-backend/aws-memcache-run.sh',
-    #'aws-default-backend/aws-rabbitmq-run.sh',
+    'aws-default-backend/aws-memcache-run.sh',
+    'aws-default-backend/aws-rabbitmq-run.sh',
     'aws-default-frontend/aws-tomcat-run.sh'
 ]
 interpreter = None
@@ -25,4 +25,4 @@ for script in deploy_order:
     if result.stderr:
         print(f"Script {script} Error:\n", result.stderr)
 
-print(" +++ The deployment of SANDBOX has completed. +++ ")
+print(" +++ The deployment script for SANDBOX has finished. +++ ")

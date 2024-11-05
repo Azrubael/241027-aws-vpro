@@ -3,8 +3,8 @@ import subprocess
 clean_order = [
     'aws-default-frontend/aws-tomcat-terminate.sh',
     'aws-default-backend/aws-mysql-terminate.sh',
-    #'aws-default-backend/aws-memcache-terminate.sh',
-    #'aws-default-backend/aws-rabbitmq-terminate.sh',
+    'aws-default-backend/aws-memcache-terminate.sh',
+    'aws-default-backend/aws-rabbitmq-terminate.sh',
     'aws-sandbox-subnets/sandbox_sg_delete.py',
     'aws-s3-default/s3_delete_with_roles.py'
 ]

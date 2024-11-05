@@ -1,5 +1,5 @@
 #!/bin/bash
-# The script to run a MySQL server on an Amazon Linux 2 instance
+# The script to run a MySQL server on an Amazon Linux 2023 instance
 
 source ./sandbox_env
 SUBNET=$BACKEND_NAME
@@ -24,7 +24,7 @@ bash 1-mysql.sh"
 USER_DATA_ENCODED=$(echo "$USER_DATA_SCRIPT" | base64)
 
 aws ec2 run-instances \
-    --image-id "ami-06b21ccaeff8cd686" \
+    --image-id "$OS_IMAGE_ID" \
     --instance-type "t2.micro" \
     --key-name "vpro-key" \
     --network-interfaces "{

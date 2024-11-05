@@ -60,6 +60,10 @@ def delete_instance_profile(instance_profile_name: str, iam_client: boto3.client
         response = iam_client.get_instance_profile(InstanceProfileName=instance_profile_name)
         print(f"Instance profile '{instance_profile_name}' found. Proceeding to delete.")
         
+        # Delete the instance profile
+        iam_client.delete_instance_profile(InstanceProfileName=instance_profile_name)
+        print(f"Instance profile '{instance_profile_name}' deleted successfully.")
+
         # Remove all roles from the instance profile
         roles = response['InstanceProfile']['Roles']
         for role in roles:
@@ -68,10 +72,6 @@ def delete_instance_profile(instance_profile_name: str, iam_client: boto3.client
                 RoleName=role['RoleName']
             )
             print(f"Removed role '{role['RoleName']}' from instance profile '{instance_profile_name}'.")
-
-        # Delete the instance profile
-        iam_client.delete_instance_profile(InstanceProfileName=instance_profile_name)
-        print(f"Instance profile '{instance_profile_name}' deleted successfully.")
 
     except ClientError as e:
         if e.response['Error']['Code'] == 'NoSuchEntity':
