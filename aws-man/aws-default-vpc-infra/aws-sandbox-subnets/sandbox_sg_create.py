@@ -165,13 +165,11 @@ def main() -> None:
     - FRONTEND_SG_NOTE: Description for the frontend security group.
     - FRONTEND_PROTOCOL1, FRONTEND_PORT1: Protocol and port for the first frontend rule.
     - FRONTEND_PROTOCOL2, FRONTEND_PORT2: Protocol and port for the second frontend rule.
-    - FRONTEND_PROTOCOL3, FRONTEND_PORT3: Protocol and port for the third frontend rule.
     - BACKEND_SG: Name of the backend security group.
     - FRONTEND_SG_NOTE: Description for the backend security group.
     - BACKEND_PROTOCOL1, BACKEND_PORT1: Protocol and port for the first backend rule.
     - BACKEND_PROTOCOL2, BACKEND_PORT2: Protocol and port for the second backend rule.
     - BACKEND_PROTOCOL3, BACKEND_PORT3: Protocol and port for the third backend rule.
-    - BACKEND_PROTOCOL4, BACKEND_PORT4: Protocol and port for the fourth backend rule.
     - BUCKET_ROLE_NAME: Name of the IAM role for the bucket.
     - INSTANCE_PROFILE_NAME: Name of the instance profile.
 
@@ -190,9 +188,7 @@ def main() -> None:
         { "protocol" : os.getenv('FRONTEND_PROTOCOL1'),
           "port" : os.getenv('FRONTEND_PORT1') },
         { "protocol" : os.getenv('FRONTEND_PROTOCOL2'),
-          "port" : os.getenv('FRONTEND_PORT2') },
-        { "protocol" : os.getenv('FRONTEND_PROTOCOL3'),
-          "port" : os.getenv('FRONTEND_PORT3') }
+          "port" : os.getenv('FRONTEND_PORT2') }
     ]
     backend_sg = os.getenv('BACKEND_SG')
     bsg_note = os.getenv('FRONTEND_SG_NOTE')
@@ -202,9 +198,7 @@ def main() -> None:
         { "protocol" : os.getenv('BACKEND_PROTOCOL2'),
           "port" : os.getenv('BACKEND_PORT2') },
         { "protocol" : os.getenv('BACKEND_PROTOCOL3'),
-          "port" : os.getenv('BACKEND_PORT3') },
-        { "protocol" : os.getenv('BACKEND_PROTOCOL4'),
-          "port" : os.getenv('BACKEND_PORT4') }
+          "port" : os.getenv('BACKEND_PORT3') }
     ]
 
     role_name = os.environ.get('BUCKET_ROLE_NAME')

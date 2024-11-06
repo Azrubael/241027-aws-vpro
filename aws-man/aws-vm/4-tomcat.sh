@@ -4,18 +4,19 @@
 
 TOMURL="https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.75/bin/apache-tomcat-9.0.75.tar.gz"
 
-
-sudo yum install -y java-11-amazon-corretto-jre
-sudo yum install p7zip maven wget -y
+sudo yum update -y
+sudo yum install -y java-11-amazon-corretto
+sudo amazon-linux-extras install epel -y
+sudo yum install p7zip wget -y
 
 cd /tmp/provisioning
-7z x vpro.zip
+sudo 7za x vpro.zip
 
 wget $TOMURL -O tomcatbin.tar.gz
 EXTOUT=`tar xzvf tomcatbin.tar.gz`
 TOMDIR=`echo $EXTOUT | cut -d '/' -f1`
 useradd --shell /sbin/nologin tomcat
-rsync -avzh /tmp/$TOMDIR/ /usr/local/tomcat/
+rsync -avzh /tmp/provisioning/$TOMDIR/ /usr/local/tomcat/
 chown -R tomcat.tomcat /usr/local/tomcat
 rm -rf /etc/systemd/system/tomcat.service
 
@@ -48,11 +49,11 @@ Restart=always
 WantedBy=multi-user.target
 EOT
 
-systemctl daemon-reload
-systemctl start tomcat
+sudo systemctl daemon-reload
+sudo systemctl start tomcat
 sleep 5
 
-systemctl stop tomcat
+sudo systemctl stop tomcat
 sleep 5
 
 sudo rm -rf /usr/local/tomcat/webapps/ROOT*

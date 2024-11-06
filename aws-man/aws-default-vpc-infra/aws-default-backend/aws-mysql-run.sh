@@ -19,6 +19,7 @@ USER_DATA_SCRIPT="#!/bin/bash
 mkdir -p /tmp/provisioning
 cd /tmp/provisioning
 aws s3 cp s3://${BUCKET_NAME}/aws-vm/1-mysql.sh .
+aws s3 cp s3://${BUCKET_NAME}/env/db_env .
 bash 1-mysql.sh"
 
 USER_DATA_ENCODED=$(echo "$USER_DATA_SCRIPT" | base64)

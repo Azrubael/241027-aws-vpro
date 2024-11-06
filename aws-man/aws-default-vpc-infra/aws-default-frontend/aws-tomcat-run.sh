@@ -19,7 +19,7 @@ sudo echo $CUSTOM_IPs >> /etc/hosts
 mkdir -p /tmp/provisioning
 cd /tmp/provisioning
 aws s3 cp s3://${BUCKET_NAME}/aws-vm/4-tomcat.sh .
-aws s3 cp s3://${BUCKET_NAME}/aws-wm/application.properties .
+aws s3 cp s3://${BUCKET_NAME}/aws-vm/application.properties .
 aws s3 cp s3://${BUCKET_NAME}/artifact/vpro.zip .
 aws s3 cp s3://${BUCKET_NAME}/artifact/vpro.z01 .
 aws s3 cp s3://${BUCKET_NAME}/artifact/vpro.z02 .
