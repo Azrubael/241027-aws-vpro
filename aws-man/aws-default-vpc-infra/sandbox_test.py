@@ -6,7 +6,7 @@ deploy_order = [
     'aws-sandbox-subnets/sandbox_sg_create.py',
     #'aws-default-backend/aws-mysql-run.sh',
     #'aws-default-backend/aws-memcache-run.sh',
-    #'aws-default-backend/aws-rabbitmq-run.sh',
+    'aws-default-backend/aws-rabbitmq-run.sh',
     'aws-default-frontend/aws-tomcat-run.sh'
 ]
 interpreter = None

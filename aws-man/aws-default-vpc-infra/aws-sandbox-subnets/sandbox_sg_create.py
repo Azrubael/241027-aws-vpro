@@ -219,7 +219,7 @@ def main() -> None:
 
     create_instance_profile_and_add_role(instance_profile_name, role_name, boto3.client('iam'))
 
-    print("\n+++ The security groups has created +++\n")
+    print("\n+++ The security groups has created. +++\n")
 
 
 if __name__ == "__main__":

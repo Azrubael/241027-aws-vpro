@@ -1,9 +1,19 @@
 #!/bin/bash
-# The script to run a RabbitMQ server on an Amazon Linux 2023 instance
+# Amazon CentOS Stream 9 (x86_64)
+# https://aws.amazon.com/marketplace/pp/prodview-k66o7o642dfve?ref_=aws-mp-console-subscription-detail
+# AMI ID: ami-0df2a11dd1fe1f8e3
 
 source ./sandbox_env
 SUBNET=$BACKEND_NAME
 TARGET_IP=$RABBITMQ_IP
+
+HOSTS="### custom IPs
+$DATABASE_IP	db01
+$MEMCACHE_IP	mc01
+$RABBITMQ_IP	rmq01
+###"
+
+RMQ_CONF='echo "[{rabbit, [{loopback_users, []}]}]." > /etc/rabbitmq/rabbitmq.config'
 
 # Checking IP address availability
 if ping -c 1 $TARGET_IP &> /dev/null; then
@@ -16,16 +26,26 @@ SUBNET_ID=$(aws ec2 describe-subnets --filters Name=tag:Name,Values=$SUBNET --qu
 BACKEND_SG_ID=$(aws ec2 describe-security-groups --filters Name=group-name,Values=$BACKEND_SG --query 'SecurityGroups[*].GroupId' --output text)
 
 USER_DATA_SCRIPT="#!/bin/bash
-mkdir -p /tmp/provisioning
-cd /tmp/provisioning
-aws s3 cp s3://${BUCKET_NAME}/aws-vm/3-rabbitmq.sh .
-bash 3-rabbitmq.sh"
+set -e
+sudo yum install epel-release -y
+sudo dnf -y install centos-release-rabbitmq-38
+sudo dnf --enablerepo=centos-rabbitmq-38 -y install rabbitmq-server
+sudo systemctl enable --now rabbitmq-server
+sudo systemctl start rabbitmq-server
+sudo sh -c $RMQ_CONF
+sudo rabbitmqctl add_user test test
+sudo rabbitmqctl set_user_tags test administrator
+sudo systemctl restart rabbitmq-server
+echo \"$HOSTS\" >> /etc/hosts
+"
+
+echo "$USER_DATA_SCRIPT"
 
 USER_DATA_ENCODED=$(echo "$USER_DATA_SCRIPT" | base64)
 
 aws ec2 run-instances \
-    --image-id "$OS_IMAGE_ID" \
-    --instance-type "t2.micro" \
+    --image-id "ami-0df2a11dd1fe1f8e3" \
+    --instance-type "t2.small" \
     --key-name "vpro-key" \
     --network-interfaces "{
             \"SubnetId\":\"$SUBNET_ID\",
@@ -41,6 +61,7 @@ aws ec2 run-instances \
     --private-dns-name-options '{"HostnameType":"ip-name","EnableResourceNameDnsARecord":false,"EnableResourceNameDnsAAAARecord":false}' \
     --count "1" \
     --user-data "$USER_DATA_ENCODED" &&
+
 
 if [ $? -eq 0 ]; then
     echo "An EC2 instance of RabbitMQ server is running."
