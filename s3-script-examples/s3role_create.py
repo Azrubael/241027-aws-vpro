@@ -3,6 +3,8 @@
 This script creates an S3 bucket with a predefined name pattern,
 an IAM role, and a policy for accessing S3 in the 'DEFAULT-VPC' network,
 and uploads a few files to it.
+
+                !!! WITHOUT handling the policy !!!
 """
 
 import boto3
@@ -102,12 +104,11 @@ files = [
     "aws-vm/1-mysql.sh",
     "aws-vm/2-memcached.sh",
     "aws-vm/3-rabbitmq.sh",
-    "aws-vm/4-tomcat.sh",
-    "aws-vm/5-nginx.sh"
+    "aws-vm/4-tomcat.sh"
 ]
 
 for file in files:
-    file_path = os.path.join("..", "..", file)
+    file_path = os.path.join("..", file)
     if os.path.isfile(file_path):
         print(f"Uploading {file_path} to s3://{bucket_name}/")
         try:

@@ -1,13 +1,12 @@
 #!/bin/bash
 # The script to setup a MySQL server on an Amazon Linux 2 instance
 
-mkdir -p /tmp/provisioning
 cd /tmp/provisioning
-curl -O https:///az-20241029.s3.us-east-1.amazonaws.com/db_env
 source /tmp/provisioning/db_env
 
-sudo yum update -y
-sudo yum install -y epel-release -y
+sudo yum makecache
+#sudo yum install -y epel-release -y
+sudo amazon-linux-extras install epel -y
 sudo yum install git -y
 
 sudo echo "### custom IPs

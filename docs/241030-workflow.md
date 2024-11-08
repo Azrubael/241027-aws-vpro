@@ -23,7 +23,7 @@
     - выполнялся пинг запущенных серверов.
 
 
-### 2024-11-01  12:01
+### 2024-11-03  21:45
 ---------------------
 Несколько дней работаю над веткой aws-man.
 Вчера запустил серверы app01 и db01 в дефолтной VPC.
@@ -32,12 +32,12 @@
 
 Актуальное состояние требует работы над правилами доступа к облачному хранилищу AWS S3.
 Решил следующее:
-- создать роль для доступа к AWS S3 bucket
-- доработать скрипты создания AWS S3 bucket и экземпляров всех серверов таким образом, чтобы они могли загрузить файлы из AWS S3 bucket
-- запустить экземпляры серверов фронтенда app01 в дефолтной подсети
++ создать роль для доступа к AWS S3 bucket
++ доработать скрипты создания AWS S3 bucket и экземпляров всех серверов таким образом, чтобы они могли загрузить файлы из AWS S3 bucket
+- запустить экземпляр сервера фронтенда app01 в дефолтной подсети и проверить коннект к AWS S3 bucket
         FRONTEND_CIDR="172.31.48.0/20"
 - в подсети 172.31.48.0/20 создать Autoscaling Group
-- запустить по одному экземпляру серверов db01, mc01 и rmq01 в дефолтной подсети
+- запустить по одному экземпляру серверов db01, mc01 и rmq01 в дефолтной подсети и проверить коннект к AWS S3 bucket
         BACKEND_CIDR="172.31.64.0/20"
 - создать Security Groups, которые сделают подсеть 172.31.64.0/20 приватной, доступной только из 172.31.48.0/20 (далее BACKEND_SUBNET и FRONTEND_SUBNET соответственно)
 - разработать скрипт bash верхнего уровня для запуска тестовой среды с четырьмя серверами (без автомасштабирования);
@@ -46,45 +46,95 @@
 #### Шаги для предоставления необходимых прав:
 1. *Перейди в консоль AWS IAM*:
    - Зайди в [консоль AWS IAM](https://console.aws.amazon.com/iam/home).
-
 2. *Найди пользователя*:
    - В левой панели выберите "Users" (Пользователи).
    - Найди и выберите пользователя.
-
 3. *Добавь необходимые разрешения*:
    - Перейди на вкладку "Permissions" (Разрешения).
    - Нажми на кнопку "Add permissions" (Добавить разрешения).
    - Выберите "Attach existing policies directly" (Присоединить существующие политики напрямую).
-
 4. *Выбери необходимые политики*:
-   - Вам нужно будет добавить политику, которая предоставляет разрешения на создание ролей и управление IAM. Вы можете использовать следующие политики:
-     - *IAMFullAccess*: Полная доступ к IAM (включая создание ролей).
-     - *IAMReadOnlyAccess*: Чтение информации о IAM (необходима только для просмотра, но не для создания).
-   - Если вы хотите предоставить более ограниченные права, вы можете создать пользовательскую политику с необходимыми разрешениями. Вот пример такой политики:
+   - *AmazonS3FullAccess*: Полная политика доступа к AWS S3.
+   - *IAMFullAccess*: Полный доступ к IAM (включая создание ролей).
+   - *IAMReadOnlyAccess*: Чтение информации о IAM (необходима только для просмотра, но не для создания).
+   - создать специальную политику (например 'devops-lab-policy') для разрешения EC2 экземпляров серверов и для роли <EC2S3ReadOnlyRole>:
 
 ```json
 {
-   "Version": "2012-10-17",
-   "Statement": [
-       {
-           "Effect": "Allow",
-           "Action": [
-               "iam:CreateRole",
-               "iam:PutRolePolicy",
-               "iam:AttachRolePolicy",
-               "iam:PassRole",
-               "iam:DeleteRolePolicy",
-               "iam:DeleteRole"
-           ],
-           "Resource": "arn:aws:iam::YOUR_ACCOUNT_ID:role/EC2S3AccessRole"
-       }
-   ]
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "iam:CreateRole",
+                "iam:PutRolePolicy",
+                "iam:AttachRolePolicy",
+                "iam:PassRole",
+                "iam:DeleteRolePolicy",
+                "iam:DeleteRole"
+            ],
+            "Resource": "arn:aws:iam::<ACCOUNT_ID>:role/<EC2S3ReadOnlyRole>"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "iam:DeleteInstanceProfile",
+                "iam:RemoveRoleFromInstanceProfile",
+                "iam:CreateInstanceProfile",
+                "iam:AddRoleToInstanceProfile",
+                "iam:PassRole"
+            ],
+            "Resource": "arn:aws:iam::<ACCOUNT_ID>:instance-profile/<EC2S3ReadOnlyProfile>"
+        }
+    ]
+}
+```
+6. *Сохранить изменения*
+
+7. Проверить профили политик безопасности
+```bash
+aws iam list-instance-profiles
+# OR
+aws iam get-instance-profile --instance-profile-name "<EC2S3ReadOnlyProfile>"
+```
+```json
+{
+    "InstanceProfiles": [
+        {
+            "Path": "/",
+            "InstanceProfileName": "<EC2S3ReadOnlyProfile>",
+            "InstanceProfileId": "AIPAWX2IF7UXVWEUQATS4",
+            "Arn": "arn:aws:iam::<ACCOUNT_ID>:instance-profile/<EC2S3ReadOnlyProfile>",
+            "CreateDate": "2024-11-04T09:06:55+00:00",
+            "Roles": [
+                {
+                    "Path": "/",
+                    "RoleName": "EC2S3ReadOnlyRole",
+                    "RoleId": "AROAWX2IF7UX3PDDGVLWR",
+                    "Arn": "arn:aws:iam::<ACCOUNT_ID>:role/<EC2S3ReadOnlyRole>",
+                    "CreateDate": "2024-11-04T09:05:07+00:00",
+                    "AssumeRolePolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Principal": {
+                                    "Service": "ec2.amazonaws.com"
+                                },
+                                "Action": "sts:AssumeRole"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
 }
 ```
 
-5. *Сохраните изменения*:
-   - После выбора необходимых политик нажмите "Next: Review" (Далее: Обзор) и затем "Add permissions" (Добавить разрешения).
-
-##### Примечания:
-- *Безопасность*: Будьте осторожны с предоставлением широких прав, таких как `IAMFullAccess`. Если это возможно, старайтесь предоставлять только те разрешения, которые необходимы для выполнения конкретных задач.
-- *Политики*: Если вы создаете пользовательскую политику, убедитесь, что вы предоставляете доступ только к тем ресурсам, которые необходимы, а не ко всем ресурсам (`"Resource": "*"`).
+8. Проверить текущего активного пользователя AWS через awscli:
+```bash
+aws sts get-caller-identity
+```
+9. Читать подробнее
+https://repost.aws/knowledge-center/ec2-instance-access-s3-bucket

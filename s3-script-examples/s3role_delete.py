@@ -3,6 +3,8 @@ This script deletes the IAM role, policy, and all objects in the bucket
 before deleting the bucket itself.
 To run this script, use the following command:
 python delete_resources.py <bucket_name>
+
+                !!! WITHOUT handling the policy !!!
 """
 import boto3
 import sys

@@ -24,7 +24,7 @@ FILES=( "artifact/vpro.zip"
         "aws-vm/5-nginx.sh" )
 
 for FILE in "${FILES[@]}"; do
-    FILEPATH="../../$FILE"
+    FILEPATH="../$FILE"
     if [ -f "$FILEPATH" ]; then
         echo "Uploading $FILEPATH to s3://$BUCKET_NAME/"
         aws s3 cp "$FILEPATH" "s3://$BUCKET_NAME/"

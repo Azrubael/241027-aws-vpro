@@ -1,8 +1,9 @@
 #!/bin/bash
 # The script to setup a MemcacheD server on an Amazon Linux 2 instance
 
-sudo dnf install epel-release -y
-sudo dnf install memcached -y
+sudo yum makecache
+sudo amazon-linux-extras install epel -y
+sudo yum install memcached -y
 
 sudo echo "### custom IPs
 172.19.100.7	db01

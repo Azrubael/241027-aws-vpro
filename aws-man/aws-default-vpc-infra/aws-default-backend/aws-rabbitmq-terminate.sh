@@ -1,18 +1,15 @@
 #!/bin/bash
+# The script to terminate AWS EC2 instances with the tag Server=RabbitMQ
 
-TAG_KEY="Server"
-TAG_VALUE="TomCat"
-echo "Terminating the instances with tag $TAG_KEY=$TAG_VALUE..."
-
-# Look for instances with tag $TAG_KEY=$TAG_VALUE
+# Look for instances with tag Server=RabbitMQ
 INSTANCE_IDS=$(aws ec2 describe-instances \
-    --filters "Name=tag:$TAG_KEY,Values=$TAG_VALUE" "Name=instance-state-name,Values=running" \
+    --filters "Name=tag:Server,Values=RabbitMQ" "Name=instance-state-name,Values=running" \
     --query 'Reservations[*].Instances[*].InstanceId' \
     --output text)
 
 # Check if there were found any
 if [ -z "$INSTANCE_IDS" ]; then
-    echo "The instances with the tag $TAG_KEY=$TAG_VALUE not found."
+    echo "The instances with the tag 'Server=RabbitMQ' not fount."
     exit 0
 fi
 

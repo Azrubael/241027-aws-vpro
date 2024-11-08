@@ -14,7 +14,7 @@ Vagrant.configure("2") do |config|
     awslab.vm.synced_folder ".", "/vagrant", disabled: false
     awslab.vm.provider "virtualbox" do |ubuntu20|
       ubuntu20.name = "awslab"
-      ubuntu20.memory = "1600"
+      ubuntu20.memory = "1500"
       ubuntu20.cpus = 2
       ubuntu20.customize ["modifyvm", :id, "--vram", "16"]
     end

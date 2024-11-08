@@ -4,15 +4,15 @@
 
 import os
 import boto3
+from botocore.exceptions import ClientError
+from typing import Optional
 from dotenv import load_dotenv
+import time
 
-load_dotenv(dotenv_path='../sandbox_env')
 
-
-def get_subnet_id_by_name(name):
+def get_subnet_id_by_name(name: str, ec2_client: boto3.client) -> Optional[str]:
     """Get the subnet ID by its name tag."""
-    ec2 = boto3.client('ec2')
-    response = ec2.describe_subnets(
+    response = ec2_client.describe_subnets(
         Filters=[{'Name': 'tag:Name', 'Values': [name]}]
     )
     subnets = response['Subnets']
@@ -21,10 +21,9 @@ def get_subnet_id_by_name(name):
     return None
 
 
-def get_security_group_id_by_name(name):
+def get_security_group_id_by_name(name: str, ec2_client: boto3.client) -> Optional[str]:
     """Get the security group ID by its name."""
-    ec2 = boto3.client('ec2')
-    response = ec2.describe_security_groups(
+    response = ec2_client.describe_security_groups(
         Filters=[{'Name': 'group-name', 'Values': [name]}]
     )
     security_groups = response['SecurityGroups']
@@ -33,36 +32,93 @@ def get_security_group_id_by_name(name):
     return None
 
 
-def delete_security_group(group_id):
+def delete_security_group(group_id: str, ec2_client: boto3.client) -> None:
     """Delete a security group by its ID."""
-    ec2 = boto3.client('ec2')
+
     try:
-        ec2.delete_security_group(GroupId=group_id)
+        ec2_client.delete_security_group(GroupId=group_id)
         print(f"Deleted security group: {group_id}")
     except Exception as e:
         print(f"Error deleting security group {group_id}: {e}")
 
 
+def delete_instance_profile(instance_profile_name: str, iam_client: boto3.client) -> None:
+    """
+    This function will delete an instance profile by its name.
+    Before deleting the instance profile, it will remove all roles
+    from the instance profile.
+
+    Parameters:
+    instance_profile_name (str): The name of the instance profile to delete.
+    iam_client (boto3.client): The IAM client to use for the delete operation.
+
+    Returns:
+    None
+    """
+    try:
+        # Check if the instance profile exists
+        response = iam_client.get_instance_profile(InstanceProfileName=instance_profile_name)
+        print(f"Instance profile '{instance_profile_name}' found. Proceeding to delete.")
+
+        # Remove all roles from the instance profile
+        roles = response['InstanceProfile']['Roles']
+        for role in roles:
+            iam_client.remove_role_from_instance_profile(
+                InstanceProfileName=instance_profile_name,
+                RoleName=role['RoleName']
+            )
+            print(f"Removed role '{role['RoleName']}' from instance profile '{instance_profile_name}'.")
+
+        delay = 7
+        print(f"Waiting {delay} seconds before deleting the instance profile {instance_profile_name}...")
+        time.sleep(delay)
+
+        # Delete the instance profile
+        iam_client.delete_instance_profile(InstanceProfileName=instance_profile_name)
+        print(f"Instance profile '{instance_profile_name}' deleted successfully.")
+
+
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'NoSuchEntity':
+            print(f"Instance profile '{instance_profile_name}' does not exist.")
+        else:
+            print(f"Error: {e}")
+
 
 if __name__ == "__main__":
+    load_dotenv(dotenv_path='./sandbox_env')
     frontend_name = os.getenv('FRONTEND_NAME')
     frontend_sg = os.getenv('FRONTEND_SG')
     backend_name = os.getenv('BACKEND_NAME')
     backend_sg = os.getenv('BACKEND_SG')
 
-    frontend_id = get_subnet_id_by_name(frontend_name)
-    # print(f"{frontend_name} has ID: {frontend_id}")
-    backend_id = get_subnet_id_by_name(backend_name)
-    # print(f"{backend_name} has ID: {backend_id}")
+    ec2_client = boto3.client('ec2')
 
-    frontend_sg_id = get_security_group_id_by_name(frontend_sg)
-    backend_sg_id = get_security_group_id_by_name(backend_sg)
+    frontend_id = get_subnet_id_by_name(frontend_name, ec2_client)
+    print(f"Found {frontend_name} with ID: {frontend_id}. This is the default subnet for the 'DEFAULT-VPC' network.")
+    backend_id = get_subnet_id_by_name(backend_name, ec2_client)
+    print(f"Found {backend_name} with ID: {backend_id}. This is the default subnet for the 'DEFAULT-VPC' network.")
 
-    if frontend_sg_id:
-        delete_security_group(frontend_sg_id)
-        print(f"Deleted {frontend_name} security group with ID: {frontend_sg_id}")
+    frontend_sg_id = get_security_group_id_by_name(frontend_sg, ec2_client)
+    print(f"Found {frontend_sg} with ID: {frontend_sg_id}")
+    backend_sg_id = get_security_group_id_by_name(backend_sg, ec2_client)
+    print(f"Found {backend_sg} with ID: {backend_sg_id}")
+
 
     if backend_sg_id:
-        delete_security_group(backend_sg_id)
+        delete_security_group(backend_sg_id, ec2_client)
         print(f"Deleted {backend_name} security group with ID: {backend_sg_id}")
 
+    delay = 7
+    print(f"Waiting {delay} seconds before deleting frontend...")
+    time.sleep(delay)
+
+    if frontend_sg_id:
+        delete_security_group(frontend_sg_id, ec2_client)
+        print(f"Deleted {frontend_name} security group with ID: {frontend_sg_id}")
+
+    instance_profile_name = os.environ.get('INSTANCE_PROFILE_NAME')
+    iam_client = boto3.client('iam')
+    delete_instance_profile(instance_profile_name, iam_client)
+
+    print("--- The script has completed. ---")
