@@ -4,8 +4,8 @@ provider "aws" {
 
 # Variables
 variable "VPC_NAME" {}
-variable "FRONTEND_NAME" {}
-variable "BACKEND_NAME" {}
+variable "FRONTEND_SUBNET_NAME" {}
+variable "BACKEND_SUBNET_NAME" {}
 variable "FRONTEND_CIDR" {}
 variable "BACKEND_CIDR" {}
 variable "OS_IMAGE_ID" {}
@@ -25,7 +25,7 @@ data "aws_subnet" "frontend" {
   count = length(data.aws_vpc.selected.id) > 0 ? 1 : 0
   filter {
     name   = "tag:Name"
-    values = [var.FRONTEND_NAME]
+    values = [var.FRONTEND_SUBNET_NAME]
   }
   vpc_id = data.aws_vpc.selected.id[0]
 }
@@ -35,7 +35,7 @@ resource "aws_subnet" "frontend" {
   vpc_id     = data.aws_vpc.selected.id[0]
   cidr_block = var.FRONTEND_CIDR
   tags = {
-    Name = var.FRONTEND_NAME
+    Name = var.FRONTEND_SUBNET_NAME
   }
 }
 
@@ -49,7 +49,7 @@ data "aws_subnet" "backend" {
   count = length(data.aws_vpc.selected.id) > 0 ? 1 : 0
   filter {
     name   = "tag:Name"
-    values = [var.BACKEND_NAME]
+    values = [var.BACKEND_SUBNET_NAME]
   }
   vpc_id = data.aws_vpc.selected.id[0]
 }
@@ -59,7 +59,7 @@ resource "aws_subnet" "backend" {
   vpc_id     = data.aws_vpc.selected.id[0]
   cidr_block = var.BACKEND_CIDR
   tags = {
-    Name = var.BACKEND_NAME
+    Name = var.BACKEND_SUBNET_NAME
   }
 }
 
