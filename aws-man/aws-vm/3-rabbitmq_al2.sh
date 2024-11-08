@@ -1,7 +1,7 @@
 #!/bin/bash
 # The script to setup a RabbitMQ server on an Amazon Linux 2 instance
 
-sudo yum update -y
+sudo yum makecache
 sudo amazon-linux-extras install epel -y
 sudo yum install git -y
 sudo yum install -y gcc gcc-c++ make ncurses-devel openssl-devel autoconf

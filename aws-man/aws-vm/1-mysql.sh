@@ -4,7 +4,7 @@
 cd /tmp/provisioning
 source /tmp/provisioning/db_env
 
-sudo yum update -y
+sudo yum makecache
 #sudo yum install -y epel-release -y
 sudo amazon-linux-extras install epel -y
 sudo yum install git -y

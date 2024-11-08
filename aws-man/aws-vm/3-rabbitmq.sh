@@ -3,6 +3,7 @@
 # https://aws.amazon.com/marketplace/pp/prodview-k66o7o642dfve?ref_=aws-mp-console-subscription-detail
 # AMI ID: ami-0df2a11dd1fe1f8e3
 
+sudo yum makecache
 sudo yum install epel-release -y
 
 sudo echo "### custom IPs
