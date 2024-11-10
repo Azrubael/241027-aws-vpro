@@ -1,11 +1,9 @@
-# Assign subnet ID to FRONT_ID if it exists or returns the ID of the newly created subnet
 output "frontend_subnet_ID" {
-  value = length(data.aws_subnet.frontend) > 0 ? data.aws_subnet.frontend[0].id : aws_subnet.frontend[0].id
+  value = aws_instance.bastion.subnet_id
 }
 
-# Assign subnet ID to BACK_ID if it exists or returns the ID of the newly created subnet
 output "backend_subnet_ID" {
-  value = length(data.aws_subnet.backend) > 0 ? data.aws_subnet.backend[0].id : aws_subnet.backend[0].id
+  value = aws_instance.backend.subnet_id
 }
 
 output "bastion_public_IP" {

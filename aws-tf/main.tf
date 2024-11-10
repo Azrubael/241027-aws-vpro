@@ -123,19 +123,16 @@ resource "aws_instance" "bastion" {
   ami                         = var.OS_IMAGE_ID
   instance_type               = "t2.micro"
   key_name                    = "vpro-key"
-  # subnet_id                   = output.FRONT_ID
+  # Assign subnet ID to if it exists or returns the ID of the newly created subnet
   subnet_id                   = length(data.aws_subnet.frontend) > 0 ? data.aws_subnet.frontend[0].id : aws_subnet.frontend[0].id
-  
   associate_public_ip_address = true
   private_ip                  = var.BASTION_IP
   credit_specification {
     cpu_credits = "standard"
   }
-
   tags = {
     Server = "Bastion"
   }
-
   user_data = file(local_file.bastion_script.filename)
 }
 
@@ -144,17 +141,15 @@ resource "aws_instance" "backend" {
   ami                         = var.OS_IMAGE_ID
   instance_type               = "t2.micro"
   key_name                    = "vpro-key"
-  # subnet_id                   = output.BACK_ID
+  # Assign subnet ID to if it exists or returns the ID of the newly created subnet
   subnet_id                   = length(data.aws_subnet.backend) > 0 ? data.aws_subnet.backend[0].id : aws_subnet.backend[0].id
   associate_public_ip_address = false
   private_ip                  = var.DATABASE_IP
   credit_specification {
     cpu_credits = "standard"
   }
-
   tags = {
     Server = "Backend"
   }
-
   user_data = file(local_file.userdata_script.filename)
 }
