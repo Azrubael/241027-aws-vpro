@@ -90,32 +90,20 @@ resource "tls_private_key" "doorward_key" {
   rsa_bits  = 2048
 }
 
-# Create bastion script
-resource "local_file" "bastion_script" {
-  content  = <<-EOT
-    #!/bin/bash
-    useradd doorward
-    usermod -aG sudo doorward
-    mkdir -p /home/doorward/.ssh
-    echo "${tls_private_key.doorward_key.public_key_openssh}" >> /home/doorward/.ssh/authorized_keys
-    chmod 600 /home/doorward/.ssh/authorized_keys
-    chown -R doorward:doorward /home/doorward/.ssh
-  EOT
-  filename = "${path.module}/bastion-script.sh"
+# Create bastion script by calling the user_setup module for the bastion server setup
+module "bastion_setup" {
+  source     = "./user_setup"
+  username   = "doorward"
+  public_key = tls_private_key.doorward_key.public_key_openssh
+  script_file = "bastion-setup-script.sh"
 }
 
-# Create userdata script for backend
-resource "local_file" "userdata_script" {
-  content  = <<-EOT
-    #!/bin/bash
-    useradd doorward
-    usermod -aG sudo doorward
-    mkdir -p /home/doorward/.ssh
-    echo "${tls_private_key.doorward_key.public_key_openssh}" >> /home/doorward/.ssh/authorized_keys
-    chmod 600 /home/doorward/.ssh/authorized_keys
-    chown -R doorward:doorward /home/doorward/.ssh
-  EOT
-  filename = "${path.module}/userdata-script.sh"
+# Create userdata script for backend by calling the user_setup module for the backend server setup
+module "backend_setup" {
+  source     = "./user_setup"
+  username   = "doorward"
+  public_key = tls_private_key.doorward_key.public_key_openssh
+  script_file = "db-setup-script.sh"
 }
 
 # Run EC2 instance 'bastion'
@@ -133,7 +121,7 @@ resource "aws_instance" "bastion" {
   tags = {
     Server = "Bastion"
   }
-  user_data = file(local_file.bastion_script.filename)
+  user_data = file(module.bastion_setup.script_file_path)
 }
 
 # Run EC2 instance 'backend'
@@ -151,5 +139,5 @@ resource "aws_instance" "backend" {
   tags = {
     Server = "Backend"
   }
-  user_data = file(local_file.userdata_script.filename)
+  user_data = file(module.backend_setup.script_file_path)
 }
