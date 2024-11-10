@@ -4,6 +4,12 @@ variable "VPC_NAME" {
   default     = "DEFAULT-VPC"
 }
 
+variable "WAN_IP" {
+  description = "Public IP address to reach the world outside"
+  type        = string
+  default     = "0.0.0.0/0"
+}
+
 variable "FRONTEND_CIDR" {
   description = "Frontend subnet CIDR"
   type        = string
@@ -28,7 +34,7 @@ variable "FRONTEND_SG_NOTE" {
   default     = "Frontend sandbox security group for TomCat servers"
 }
 
-variable "BACKEND_PORTS" {
+variable "FRONTEND_PORTS" {
   description = "An array containing data for creating frontend security group rules"
   type = list(list(any))
   default = [
@@ -68,7 +74,7 @@ variable "BACKEND_PORTS" {
     ["tcp", 22],
     ["tcp", 11211],
     ["tcp", 5672],
-    ["tcp",3306],
+    ["tcp", 3306],
     ["all",-1]
   ]
 }

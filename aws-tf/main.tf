@@ -1,18 +1,8 @@
-provider "aws" {
-  region = "us-east-1" # Change to your desired region
-}
+# Training configuration for running a bastion server and one backend server
+# in order to practice the technology of establishing a ssh connection
+# in AWS Cloud Environment
 
-# Variables
-variable "VPC_NAME" {}
-variable "FRONTEND_SUBNET_NAME" {}
-variable "BACKEND_SUBNET_NAME" {}
-variable "FRONTEND_CIDR" {}
-variable "BACKEND_CIDR" {}
-variable "OS_IMAGE_ID" {}
-variable "BASTION_IP" {}
-variable "BACKEND_IP" {}
-
-# Get VPC ID by tag
+# Get the existed default AWS VPC ID by tag
 data "aws_vpc" "selected" {
   filter {
     name   = "tag:Name"
@@ -27,12 +17,12 @@ data "aws_subnet" "frontend" {
     name   = "tag:Name"
     values = [var.FRONTEND_SUBNET_NAME]
   }
-  vpc_id = data.aws_vpc.selected.id[0]
+  vpc_id = data.aws_vpc.selected.id
 }
 
 resource "aws_subnet" "frontend" {
   count = length(data.aws_subnet.frontend) == 0 ? 1 : 0
-  vpc_id     = data.aws_vpc.selected.id[0]
+  vpc_id     = data.aws_vpc.selected.id
   cidr_block = var.FRONTEND_CIDR
   tags = {
     Name = var.FRONTEND_SUBNET_NAME
@@ -51,12 +41,12 @@ data "aws_subnet" "backend" {
     name   = "tag:Name"
     values = [var.BACKEND_SUBNET_NAME]
   }
-  vpc_id = data.aws_vpc.selected.id[0]
+  vpc_id = data.aws_vpc.selected.id
 }
 
 resource "aws_subnet" "backend" {
   count = length(data.aws_subnet.backend) == 0 ? 1 : 0
-  vpc_id     = data.aws_vpc.selected.id[0]
+  vpc_id     = data.aws_vpc.selected.id
   cidr_block = var.BACKEND_CIDR
   tags = {
     Name = var.BACKEND_SUBNET_NAME
@@ -71,35 +61,36 @@ output "BACK_ID" {
 # Create security group for frontend
 resource "aws_security_group" "front_sg" {
   name        = "front-sg"
-  description = "Allow SSH and HTTP access"
-  vpc_id      = data.aws_vpc.selected.id[0]
+  description = "Frontend security group for application and jump servers."
+  vpc_id      = data.aws_vpc.selected.id
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  dynamic "ingress" {
+    for_each = var.FRONTEND_PORTS
 
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    content {
+      from_port   = ingress.value[1]
+      to_port     = ingress.value[1]
+      protocol    = ingress.value[0]
+      cidr_blocks = [var.WAN_IP]
+    }
   }
 }
 
 # Create security group for backend
 resource "aws_security_group" "back_sg" {
   name        = "back-sg"
-  description = "Allow access from frontend"
-  vpc_id      = data.aws_vpc.selected.id[0]
+  description = "Backend security group for DB, MemcacheD and RabbitMQ servers."
+  vpc_id      = data.aws_vpc.selected.id
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.FRONTEND_CIDR]
+  dynamic "ingress" {
+    for_each = var.BACKEND_PORTS
+
+    content {
+      from_port   = ingress.value[1]
+      to_port     = ingress.value[1]
+      protocol    = ingress.value[0]
+      cidr_blocks = [var.FRONTEND_CIDR]
+    }
   }
 }
 
@@ -163,7 +154,7 @@ resource "aws_instance" "backend" {
   key_name              = "vpro-key"
   subnet_id             = aws_subnet.backend[0].id
   associate_public_ip_address = false
-  private_ip            = var.BACKEND_IP
+  private_ip            = var.DATABASE_IP
   credit_specification {
     cpu_credits = "standard"
   }
