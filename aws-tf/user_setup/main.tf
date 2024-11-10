@@ -13,7 +13,7 @@ variable "script_file" {
   type        = string
 }
 
-resource "local_file" "user_script" {
+resource "local_sensitive_file" "user_script" {
   content  = <<-EOT
     #!/bin/bash
     useradd ${var.username}
@@ -23,9 +23,10 @@ resource "local_file" "user_script" {
     chmod 600 /home/${var.username}/.ssh/authorized_keys
     chown -R ${var.username}:${var.username} /home/${var.username}/.ssh
   EOT
-  filename = "${path.module}/${var.script_file}"
+  filename = var.script_file
 }
 
-output "script_file_path" {
-  value = local_file.user_script.filename
+output "script_file_full_path" {
+  description = "The full path to the file with the user setup script"
+  value = local_sensitive_file.user_script.filename
 }

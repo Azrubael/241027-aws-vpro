@@ -2,6 +2,21 @@
 # in order to practice the technology of establishing a ssh connection
 # in AWS Cloud Environment
 
+variable "bastion_script_file" {
+  type = string
+  default = "bash-scripts/bastion-setup-script.sh"
+}
+
+variable "backend_script_file" {
+  type = string
+  default = "bash-scripts/db-setup-script.sh"
+}
+
+locals {
+  bastion_script_path = "${path.module}/${var.bastion_script_file}"
+  backend_script_path = "${path.module}/${var.backend_script_file}"
+}
+
 # Get the existed default AWS VPC ID by tag
 data "aws_vpc" "selected" {
   filter {
@@ -90,20 +105,25 @@ resource "tls_private_key" "doorward_key" {
   rsa_bits  = 2048
 }
 
-# Create bastion script by calling the user_setup module for the bastion server setup
+# Create the script for bastion setup by calling the user_setup module
 module "bastion_setup" {
   source     = "./user_setup"
   username   = "doorward"
   public_key = tls_private_key.doorward_key.public_key_openssh
-  script_file = "bastion-setup-script.sh"
+  script_file = local.bastion_script_path
 }
 
-# Create userdata script for backend by calling the user_setup module for the backend server setup
+# Create the script for backend setup by calling the user_setup module
 module "backend_setup" {
   source     = "./user_setup"
   username   = "doorward"
   public_key = tls_private_key.doorward_key.public_key_openssh
-  script_file = "db-setup-script.sh"
+  script_file = local.backend_script_path
+}
+
+locals {
+  bastion_provision = module.bastion_setup
+  db_provision = module.backend_setup
 }
 
 # Run EC2 instance 'bastion'
@@ -121,7 +141,7 @@ resource "aws_instance" "bastion" {
   tags = {
     Server = "Bastion"
   }
-  user_data = file(module.bastion_setup.script_file_path)
+  user_data = file(module.bastion_setup.script_file_full_path)
 }
 
 # Run EC2 instance 'backend'
@@ -139,5 +159,5 @@ resource "aws_instance" "backend" {
   tags = {
     Server = "Backend"
   }
-  user_data = file(module.backend_setup.script_file_path)
+  user_data = file(module.backend_setup.script_file_full_path)
 }
