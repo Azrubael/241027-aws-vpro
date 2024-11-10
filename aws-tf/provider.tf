@@ -1,5 +1,5 @@
 provider "aws" {
-  region = var.BUCKET_REGION
+  region  = var.BUCKET_REGION
   profile = "default"
 }
 

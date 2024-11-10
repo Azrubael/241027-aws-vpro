@@ -36,10 +36,10 @@ variable "FRONTEND_SG_NOTE" {
 
 variable "FRONTEND_PORTS" {
   description = "An array containing data for creating frontend security group rules"
-  type = list(list(any))
+  type        = list(list(any))
   default = [
     ["tcp", 8080],
-    ["tcp",22]
+    ["tcp", 22]
   ]
 }
 
@@ -52,7 +52,7 @@ variable "BACKEND_CIDR" {
 variable "BACKEND_SUBNET_NAME" {
   description = "Value of the tag 'Name' for the frontend subnet"
   type        = string
-  default     = "FRONTEND-subnet"
+  default     = "BACKEND-subnet"
 }
 
 variable "BACKEND_SG" {
@@ -69,13 +69,13 @@ variable "BACKEND_SG_NOTE" {
 
 variable "BACKEND_PORTS" {
   description = "An array containing data for creating backend security group rules"
-  type = list(list(any))
+  type        = list(list(any))
   default = [
     ["tcp", 22],
     ["tcp", 11211],
     ["tcp", 5672],
     ["tcp", 3306],
-    ["all",-1]
+    ["all", -1]
   ]
 }
 

@@ -21,17 +21,12 @@ data "aws_subnet" "frontend" {
 }
 
 resource "aws_subnet" "frontend" {
-  count = length(data.aws_subnet.frontend) == 0 ? 1 : 0
+  count      = length(data.aws_subnet.frontend) == 0 ? 1 : 0
   vpc_id     = data.aws_vpc.selected.id
   cidr_block = var.FRONTEND_CIDR
   tags = {
     Name = var.FRONTEND_SUBNET_NAME
   }
-}
-
-# Assign subnet ID to FRONT_ID
-output "FRONT_ID" {
-  value = length(data.aws_subnet.frontend) > 0 ? data.aws_subnet.frontend[0].id : aws_subnet.frontend[0].id
 }
 
 # Get or create backend subnet
@@ -45,17 +40,12 @@ data "aws_subnet" "backend" {
 }
 
 resource "aws_subnet" "backend" {
-  count = length(data.aws_subnet.backend) == 0 ? 1 : 0
+  count      = length(data.aws_subnet.backend) == 0 ? 1 : 0
   vpc_id     = data.aws_vpc.selected.id
   cidr_block = var.BACKEND_CIDR
   tags = {
     Name = var.BACKEND_SUBNET_NAME
   }
-}
-
-# Assign subnet ID to BACK_ID
-output "BACK_ID" {
-  value = length(data.aws_subnet.backend) > 0 ? data.aws_subnet.backend[0].id : aws_subnet.backend[0].id
 }
 
 # Create security group for frontend
@@ -102,7 +92,7 @@ resource "tls_private_key" "doorward_key" {
 
 # Create bastion script
 resource "local_file" "bastion_script" {
-  content = <<-EOT
+  content  = <<-EOT
     #!/bin/bash
     useradd doorward
     usermod -aG sudo doorward
@@ -116,7 +106,7 @@ resource "local_file" "bastion_script" {
 
 # Create userdata script for backend
 resource "local_file" "userdata_script" {
-  content = <<-EOT
+  content  = <<-EOT
     #!/bin/bash
     useradd doorward
     usermod -aG sudo doorward
@@ -130,12 +120,14 @@ resource "local_file" "userdata_script" {
 
 # Run EC2 instance 'bastion'
 resource "aws_instance" "bastion" {
-  ami                    = var.OS_IMAGE_ID
-  instance_type         = "t2.micro"
-  key_name              = "vpro-key"
-  subnet_id             = aws_subnet.frontend[0].id
+  ami                         = var.OS_IMAGE_ID
+  instance_type               = "t2.micro"
+  key_name                    = "vpro-key"
+  # subnet_id                   = output.FRONT_ID
+  subnet_id                   = length(data.aws_subnet.frontend) > 0 ? data.aws_subnet.frontend[0].id : aws_subnet.frontend[0].id
+  
   associate_public_ip_address = true
-  private_ip            = var.BASTION_IP
+  private_ip                  = var.BASTION_IP
   credit_specification {
     cpu_credits = "standard"
   }
@@ -149,12 +141,13 @@ resource "aws_instance" "bastion" {
 
 # Run EC2 instance 'backend'
 resource "aws_instance" "backend" {
-  ami                    = var.OS_IMAGE_ID
-  instance_type         = "t2.micro"
-  key_name              = "vpro-key"
-  subnet_id             = aws_subnet.backend[0].id
+  ami                         = var.OS_IMAGE_ID
+  instance_type               = "t2.micro"
+  key_name                    = "vpro-key"
+  # subnet_id                   = output.BACK_ID
+  subnet_id                   = length(data.aws_subnet.backend) > 0 ? data.aws_subnet.backend[0].id : aws_subnet.backend[0].id
   associate_public_ip_address = false
-  private_ip            = var.DATABASE_IP
+  private_ip                  = var.DATABASE_IP
   credit_specification {
     cpu_credits = "standard"
   }
@@ -164,13 +157,4 @@ resource "aws_instance" "backend" {
   }
 
   user_data = file(local_file.userdata_script.filename)
-}
-
-# Outputs
-output "bastion_public_ip" {
-  value = aws_instance.bastion.public_ip
-}
-
-output "backend_private_ip" {
-  value = aws_instance.backend.private_ip
 }
