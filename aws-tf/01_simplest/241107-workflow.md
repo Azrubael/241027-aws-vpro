@@ -3,8 +3,8 @@
 
 #### Plan:
 ----------
-I create a cloud infrastructure on AWS.
-Write me a terraform configuration file main.tf to do the next steps:
+A cloud infrastructure on AWS.
+To do the next steps:
 - get the VPC ID by the tag 'Name'=$VPC_NAME;
 - check if one of the subnets in VPC ID has the tag 'Name'=$FRONTEND_NAME and assign its cidr to $FRONTEND_CIDR. If the VPC haven't the tag 'Name'=$FRONTEND_NAME, assign the tag to the subnet with $FRONTEND_CIDR;
 - assign subnet ID of $FRONTEND_CIDR to $FRONT_ID;
