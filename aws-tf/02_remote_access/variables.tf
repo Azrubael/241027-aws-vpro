@@ -106,7 +106,7 @@ variable "BASTION_IP" {
 variable "OS_IMAGE_ID" {
   description = "OS image id for the EC2 instances"
   type        = string
-  default     = "ami-0ddc798b3f1a5117e"
+  default     = "ami-0984f4b9e98be44bf"
 }
 
 variable "BUCKET_NAME" {

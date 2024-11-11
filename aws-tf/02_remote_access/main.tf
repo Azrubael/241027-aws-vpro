@@ -84,29 +84,14 @@ resource "aws_security_group" "back_sg" {
   }
 }
 
-# Generate SSH key pair
-resource "tls_private_key" "doorward_key" {
-  algorithm = "RSA"
-  rsa_bits  = 2048
-}
-
-# Create the script for bastion setup by calling the user_setup module
 module "bastion_setup" {
-  source     = "./user_setup"
+  source     = "./jump_setup"
   username   = "doorward"
-  public_key = tls_private_key.doorward_key.public_key_openssh
 }
 
-# Create the script for backend setup by calling the user_setup module
 module "backend_setup" {
-  source     = "./user_setup"
+  source     = "./db_setup"
   username   = "doorward"
-  public_key = tls_private_key.doorward_key.public_key_openssh
-}
-
-locals {
-  bastion_provision = module.bastion_setup
-  db_provision = module.backend_setup
 }
 
 # Run EC2 instance 'bastion'
