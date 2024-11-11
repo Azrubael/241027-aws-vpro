@@ -2,21 +2,6 @@
 # in order to practice the technology of establishing a ssh connection
 # in AWS Cloud Environment
 
-variable "bastion_script_file" {
-  type = string
-  default = "bash-scripts/bastion-setup-script.sh"
-}
-
-variable "backend_script_file" {
-  type = string
-  default = "bash-scripts/db-setup-script.sh"
-}
-
-locals {
-  bastion_script_path = "${path.module}/${var.bastion_script_file}"
-  backend_script_path = "${path.module}/${var.backend_script_file}"
-}
-
 # Get the existed default AWS VPC ID by tag
 data "aws_vpc" "selected" {
   filter {
@@ -110,7 +95,6 @@ module "bastion_setup" {
   source     = "./user_setup"
   username   = "doorward"
   public_key = tls_private_key.doorward_key.public_key_openssh
-  script_file = local.bastion_script_path
 }
 
 # Create the script for backend setup by calling the user_setup module
@@ -118,7 +102,6 @@ module "backend_setup" {
   source     = "./user_setup"
   username   = "doorward"
   public_key = tls_private_key.doorward_key.public_key_openssh
-  script_file = local.backend_script_path
 }
 
 locals {
@@ -139,9 +122,11 @@ resource "aws_instance" "bastion" {
     cpu_credits = "standard"
   }
   tags = {
+    Name = "jump01"
     Server = "Bastion"
   }
-  user_data = file(module.bastion_setup.script_file_full_path)
+  user_data = base64encode(file(module.bastion_setup.script_file_path))
+  depends_on = [ module.bastion_setup ]
 }
 
 # Run EC2 instance 'backend'
@@ -157,7 +142,19 @@ resource "aws_instance" "backend" {
     cpu_credits = "standard"
   }
   tags = {
+    Name = "db01"
     Server = "Backend"
   }
-  user_data = file(module.backend_setup.script_file_full_path)
+  user_data = base64encode(file(module.backend_setup.script_file_path))
+  depends_on = [ module.backend_setup ]
+}
+
+output "bastion_user_data" {
+  description = "The hashed user data for the jump server"
+  value = aws_instance.bastion.user_data
+}
+
+output "backend_user_data" {
+  description = "The hashed user data for the MySQL DB server"
+  value = aws_instance.backend.user_data
 }
