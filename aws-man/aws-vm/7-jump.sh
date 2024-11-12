@@ -4,7 +4,7 @@
 
 TOMURL="https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.75/bin/apache-tomcat-9.0.75.tar.gz"
 
-sudo yum makecache
+sudo yum update -y
 sudo yum install -y java-11-amazon-corretto
 sudo amazon-linux-extras install epel -y
 sudo yum install p7zip wget -y
