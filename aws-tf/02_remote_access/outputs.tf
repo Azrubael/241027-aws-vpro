@@ -22,3 +22,11 @@ output "backend_private_IP" {
   description = "value of the private IP address of the MySQL DB server"
   value = aws_instance.backend.private_ip
 }
+
+output "db_instance_ID" {
+  value = aws_instance.backend.id
+}
+
+output "bastion_instance_ID" {
+  value = aws_instance.backend.id
+}

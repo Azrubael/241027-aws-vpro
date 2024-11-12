@@ -13,7 +13,9 @@ To do the next steps:
 - create a security group $FRONTEND_SG to allow ingress from '0.0.0.0/0' via SSH:22 and HTTP:8080;
 - create a security group $BACKEND_SG to allow ingress only from $FRONTEND_CIDR;
 - generate "doorward" ssh security key manually and place it in './.env/' directory:
-            ssh-keygen -t rsa -b 2048 -f ./doorward
+            ssh-keygen -t rsa -b 4096 -f ./env/anykey
+            scp -i ./env/anykey.pem ./env/wavekey.pem ec2-user@<some_IP>:/home/ec2-user
+            ssh -i ./env/anykey.pem ec2-user@<some_IP>
 - create "bastion-script.sh" to do the next:
     + create a user "doorward";
     + add a user "doorward" to the group "sudo";
@@ -45,3 +47,23 @@ To do the next steps:
     + assign a tag 'Name'='db01', 'Server'='MySQL';
     + run the script 'db-script.sh' to add the public ssh key.
 
+
+### 2024-11-12  20:18
+---------------------
+$ ssh -i 241107-key.pem ec2-user@100.26.209.190
+   ,     #_
+   ~\_  ####_        Amazon Linux 2
+  ~~  \_#####\
+  ~~     \###|       AL2 End of Life is 2025-06-30.
+  ~~       \#/ ___
+   ~~       V~' '->
+    ~~~         /    A newer version of Amazon Linux is available!
+      ~~._.   _/
+         _/ _/       Amazon Linux 2023, GA and supported until 2028-03-15.
+       _/m/'           https://aws.amazon.com/linux/amazon-linux-2023/
+
+[ec2-user@ip-172-31-48-249 ~]$ logout
+Connection to 100.26.209.190 closed.
+$ scp -i 241107-key.pem  vpro-key.pem ec2-user@100.26.209.190:/home/ec2-user
+vpro-key.pem                                                      100% 1679    12.8KB/s   00:00 
+$

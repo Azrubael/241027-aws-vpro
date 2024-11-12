@@ -84,22 +84,12 @@ resource "aws_security_group" "back_sg" {
   }
 }
 
-module "bastion_setup" {
-  source     = "./jump_setup"
-  username   = "doorward"
-}
-
-module "backend_setup" {
-  source     = "./db_setup"
-  username   = "doorward"
-}
-
 # Run EC2 instance 'bastion'
 resource "aws_instance" "bastion" {
   ami                         = var.OS_IMAGE_ID
   instance_type               = "t2.micro"
-  key_name                    = "vpro-key"
-  # Assign subnet ID to if it exists or returns the ID of the newly created subnet
+  key_name                    = "241107-key"
+  # Assign subnet ID if it exists or returns the ID of the newly created subnet
   subnet_id                   = length(data.aws_subnet.frontend) > 0 ? data.aws_subnet.frontend[0].id : aws_subnet.frontend[0].id
   associate_public_ip_address = true
   private_ip                  = var.BASTION_IP
@@ -110,8 +100,10 @@ resource "aws_instance" "bastion" {
     Name = "jump01"
     Server = "Bastion"
   }
-  user_data = base64encode(file(module.bastion_setup.script_file_path))
-  depends_on = [ module.bastion_setup ]
+  user_data = templatefile("${path.module}/jump_setup/jump_template_script.sh", {
+    bucket_name = var.BUCKET_NAME
+    setup_file = "aws-vm-tf/7-jump.sh"
+  })
 }
 
 # Run EC2 instance 'backend'
@@ -119,7 +111,7 @@ resource "aws_instance" "backend" {
   ami                         = var.OS_IMAGE_ID
   instance_type               = "t2.micro"
   key_name                    = "vpro-key"
-  # Assign subnet ID to if it exists or returns the ID of the newly created subnet
+  # Assign subnet ID if it exists or returns the ID of the newly created subnet
   subnet_id                   = length(data.aws_subnet.backend) > 0 ? data.aws_subnet.backend[0].id : aws_subnet.backend[0].id
   associate_public_ip_address = false
   private_ip                  = var.DATABASE_IP
@@ -130,16 +122,9 @@ resource "aws_instance" "backend" {
     Name = "db01"
     Server = "Backend"
   }
-  user_data = base64encode(file(module.backend_setup.script_file_path))
-  depends_on = [ module.backend_setup ]
-}
-
-output "bastion_user_data" {
-  description = "The hashed user data for the jump server"
-  value = aws_instance.bastion.user_data
-}
-
-output "backend_user_data" {
-  description = "The hashed user data for the MySQL DB server"
-  value = aws_instance.backend.user_data
+  user_data = templatefile("${path.module}/db_setup/db_template_script.sh", {
+    bucket_name = var.BUCKET_NAME
+    setup_file = "aws-vm-tf/1-mysql.sh"
+    env_file = ".env/db_env"
+  })
 }
