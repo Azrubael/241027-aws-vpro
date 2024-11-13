@@ -50,6 +50,8 @@ To do the next steps:
 
 ### 2024-11-12  20:18
 ---------------------
+$ scp -i 241107-key.pem  vpro-key.pem ec2-user@100.26.209.190:/home/ec2-user
+vpro-key.pem                                                      100% 1679    12.8KB/s   00:00 
 $ ssh -i 241107-key.pem ec2-user@100.26.209.190
    ,     #_
    ~\_  ####_        Amazon Linux 2
@@ -62,8 +64,24 @@ $ ssh -i 241107-key.pem ec2-user@100.26.209.190
          _/ _/       Amazon Linux 2023, GA and supported until 2028-03-15.
        _/m/'           https://aws.amazon.com/linux/amazon-linux-2023/
 
-[ec2-user@ip-172-31-48-249 ~]$ logout
-Connection to 100.26.209.190 closed.
-$ scp -i 241107-key.pem  vpro-key.pem ec2-user@100.26.209.190:/home/ec2-user
-vpro-key.pem                                                      100% 1679    12.8KB/s   00:00 
-$
+[ec2-user@ip-172-31-48-249 ~]$ ls
+vpro-key.pem
+[ec2-user@ip-172-31-48-249 ~]$ ssh -i vpro-key.pem ec2-user@172.31.64.7
+The authenticity of host '172.31.64.7 (172.31.64.7)' can't be established.
+ECDSA key fingerprint is SHA256:qCmzINPs4HHfUwGqaare99KNALabL9DZTnMy0KFhv/8.
+ECDSA key fingerprint is MD5:d5:5e:40:60:f9:b6:dd:9d:70:9d:5b:50:75:74:6c:d8.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '172.31.64.7' (ECDSA) to the list of known hosts.
+   ,     #_
+   ~\_  ####_        Amazon Linux 2
+  ~~  \_#####\
+  ~~     \###|       AL2 End of Life is 2025-06-30.
+  ~~       \#/ ___
+   ~~       V~' '->
+    ~~~         /    A newer version of Amazon Linux is available!
+      ~~._.   _/
+         _/ _/       Amazon Linux 2023, GA and supported until 2028-03-15.
+       _/m/'           https://aws.amazon.com/linux/amazon-linux-2023/
+
+[ec2-user@ip-172-31-64-7 ~]$ 
+
