@@ -124,19 +124,19 @@ variable "BUCKET_REGION" {
 variable "BUCKET_ROLE_NAME" {
   description = "S3 bucket role name"
   type        = string
-  default     = "EC2S3ReadOnlyRole"
+  default     = "EC2S3ReadOnlyRoleTF"
 }
 
 variable "BUCKET_POLICY_NAME" {
-  description = "S3 bucket policy name"
+  description = "S3 bucket policy name to allow access to S3 bucket"
   type        = string
-  default     = "EC2S3ReadOnlyPolicy"
+  default     = "EC2S3ReadOnlyPolicyTF"
 }
 
 variable "INSTANCE_PROFILE_NAME" {
   description = "Instance profile name for connetion EC2 instances to S3 bucket"
   type        = string
-  default     = "EC2S3ReadOnlyProfile"
+  default     = "EC2S3ReadOnlyProfileTF"
 }
 
 variable "PATH_TO_PUBLIC_KEY" {
