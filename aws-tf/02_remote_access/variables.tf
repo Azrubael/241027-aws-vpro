@@ -144,3 +144,23 @@ variable "PATH_TO_PUBLIC_KEY" {
   type        = string
   default     = "~/.aws/doorward.pub"
 }
+
+variable "DB_PASS" {
+  description = "Database password"
+  type        = string
+}
+
+variable "SP_PUBLIC_KEY" {
+  description = "Path to the public key used for ssh access from jumpserver"
+  type        = string
+}
+
+variable "SP_PRIVATE_KEY" {
+  description = "Path to the private key used for ssh access from jumpserver"
+  type        = string
+}
+
+variable "SP_PASS" {
+  description = "Doorward's password"
+  type        = string
+}

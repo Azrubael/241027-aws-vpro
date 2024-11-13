@@ -85,3 +85,56 @@ Warning: Permanently added '172.31.64.7' (ECDSA) to the list of known hosts.
 
 [ec2-user@ip-172-31-64-7 ~]$ 
 
+
+### 2024-11-13  13:04
+---------------------
+$ scp -i key1.pem key2.pem  ec2-user@34.227.94.47:/home/ec2-user/
+vpro-key.pem                                 100% 1679    12.0KB/s   00:00  
+$ ssh -i key1.pem ec2-user@34.227.94.47
+Last login: Wed Nov 13 11:03:29 2024 from 188.163.110.92
+   ,     #_
+   ~\_  ####_        Amazon Linux 2
+  ~~  \_#####\
+  ~~     \###|       AL2 End of Life is 2025-06-30.
+  ~~       \#/ ___
+   ~~       V~' '->
+    ~~~         /    A newer version of Amazon Linux is available!
+      ~~._.   _/
+         _/ _/       Amazon Linux 2023, GA and supported until 2028-03-15.
+       _/m/'           https://aws.amazon.com/linux/amazon-linux-2023/
+
+[ec2-user@ip-172-31-48-249 ~]$ ls -l
+total 4
+-r-------- 1 ec2-user ec2-user 1679 Nov 13 11:06 key2.pem
+[ec2-user@ip-172-31-48-249 ~]$ ssh -i key2.pem ec2-user@172.31.64.7
+The authenticity of host '172.31.64.7 (172.31.64.7)' can't be established.
+Are you sure you want to continue connecting (yes/no)? yes
+   ,     #_
+   ~\_  ####_        Amazon Linux 2
+  ~~  \_#####\
+  ~~     \###|       AL2 End of Life is 2025-06-30.
+  ~~       \#/ ___
+   ~~       V~' '->
+    ~~~         /    A newer version of Amazon Linux is available!
+      ~~._.   _/
+         _/ _/       Amazon Linux 2023, GA and supported until 2028-03-15.
+       _/m/'           https://aws.amazon.com/linux/amazon-linux-2023/
+
+[ec2-user@ip-172-31-64-7 ~]$ sudo systemctl status mariadb
+● mariadb.service - MariaDB database server
+   Loaded: loaded (/usr/lib/systemd/system/mariadb.service; enabled; vendor preset: disabled)
+   Active: active (running) since Wed 2024-11-13 11:02:00 UTC; 8min ago
+  Process: 3883 ExecStartPost=/usr/libexec/mariadb-wait-ready $MAINPID (code=exited, status=0/SUCCESS)
+  Process: 3848 ExecStartPre=/usr/libexec/mariadb-prepare-db-dir %n (code=exited, status=0/SUCCESS)
+ Main PID: 3882 (mysqld_safe)
+   CGroup: /system.slice/mariadb.service
+           ├─3882 /bin/sh /usr/bin/mysqld_safe --basedir=/usr
+           └─4048 /usr/libexec/mysqld --basedir=/usr --datadir=/var/lib/mysql --plugin-dir=/usr/l...
+
+Nov 13 11:01:58 ip-172-31-64-7.ec2.internal systemd[1]: Starting MariaDB database server...
+Nov 13 11:01:58 ip-172-31-64-7.ec2.internal mariadb-prepare-db-dir[3848]: Database MariaDB is pro...
+Nov 13 11:01:59 ip-172-31-64-7.ec2.internal mysqld_safe[3882]: 241113 11:01:59 mysqld_safe Loggi....
+Nov 13 11:01:59 ip-172-31-64-7.ec2.internal mysqld_safe[3882]: 241113 11:01:59 mysqld_safe Start...l
+Nov 13 11:02:00 ip-172-31-64-7.ec2.internal systemd[1]: Started MariaDB database server.
+Hint: Some lines were ellipsized, use -l to show in full.
+

@@ -84,13 +84,19 @@ resource "aws_security_group" "back_sg" {
   }
 }
 
+# Getting the IDs of the created subnets
+locals {
+  frontend_subnet_id = length(data.aws_subnet.frontend) > 0 ? data.aws_subnet.frontend[0].id : aws_subnet.frontend[0].id
+  backend_subnet_id = length(data.aws_subnet.backend) > 0 ? data.aws_subnet.backend[0].id : aws_subnet.backend[0].id
+}
+
 # Run EC2 instance 'bastion'
 resource "aws_instance" "bastion" {
   ami                         = var.OS_IMAGE_ID
   instance_type               = "t2.micro"
   key_name                    = "241107-key"
   # Assign subnet ID if it exists or returns the ID of the newly created subnet
-  subnet_id                   = length(data.aws_subnet.frontend) > 0 ? data.aws_subnet.frontend[0].id : aws_subnet.frontend[0].id
+  subnet_id                   = local.frontend_subnet_id
   associate_public_ip_address = true
   private_ip                  = var.BASTION_IP
   credit_specification {
@@ -100,19 +106,16 @@ resource "aws_instance" "bastion" {
     Name = "jump01"
     Server = "Bastion"
   }
-  user_data = templatefile("${path.module}/jump_setup/jump_template_script.sh", {
-    bucket_name = var.BUCKET_NAME
-    setup_file = "aws-vm-tf/7-jump.sh"
-  })
+  user_data = templatefile("${path.module}/jump_setup/jump_template_script.sh", {})
 }
 
-# Run EC2 instance 'backend'
+# Run EC2 instance 'MySQL'
 resource "aws_instance" "backend" {
   ami                         = var.OS_IMAGE_ID
   instance_type               = "t2.micro"
   key_name                    = "vpro-key"
   # Assign subnet ID if it exists or returns the ID of the newly created subnet
-  subnet_id                   = length(data.aws_subnet.backend) > 0 ? data.aws_subnet.backend[0].id : aws_subnet.backend[0].id
+  subnet_id                   = local.backend_subnet_id
   associate_public_ip_address = false
   private_ip                  = var.DATABASE_IP
   credit_specification {
@@ -120,11 +123,38 @@ resource "aws_instance" "backend" {
   }
   tags = {
     Name = "db01"
-    Server = "Backend"
+    Server = "MySQL"
   }
   user_data = templatefile("${path.module}/db_setup/db_template_script.sh", {
-    bucket_name = var.BUCKET_NAME
-    setup_file = "aws-vm-tf/1-mysql.sh"
-    env_file = ".env/db_env"
+    DATABASE_PASS = var.DB_PASS
   })
+}
+
+# Create Elastic IP for NAT gateway
+resource "aws_eip" "nat_eip" {
+}
+
+# Create NAT Gateway in the public subnet 'frontend'
+resource "aws_nat_gateway" "nat_gw" {
+  allocation_id = aws_eip.nat_eip.id
+  subnet_id    = local.frontend_subnet_id
+}
+
+# Create route table for the private subnet 'backend'
+resource "aws_route_table" "backend_route_table" {
+  vpc_id = data.aws_vpc.selected.id
+  route {
+    cidr_block = var.WAN_IP
+    nat_gateway_id = aws_nat_gateway.nat_gw.id
+  }
+  tags = {
+    Name = "vpro_Backend_Route_Table"
+  }
+}
+
+# Route table association with the private subnet 'backend'
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table_association
+resource "aws_route_table_association" "backend_association" {
+  subnet_id      = local.backend_subnet_id
+  route_table_id = aws_route_table.backend_route_table.id
 }

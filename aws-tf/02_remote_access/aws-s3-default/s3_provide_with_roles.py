@@ -109,13 +109,7 @@ if __name__ == "__main__":
         "artifact/vpro.zip",
         "artifact/vpro.z01",
         "artifact/vpro.z02",
-        ".env/db_env",
-        "aws-vm-tf/application.properties",
-        "aws-vm-tf/1-mysql.sh",
-        "aws-vm-tf/2-memcached.sh",
-        "aws-vm-tf/3-rabbitmq.sh",
-        "aws-vm-tf/4-tomcat.sh",
-        "aws-vm-tf/7-jump.sh"
+        "artifact/application.properties"
     ]
 
     # Define the trust policy for the IAM role
