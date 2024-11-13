@@ -4,8 +4,6 @@ sudo yum makecache
 #sudo yum install epel-release -y
 sudo amazon-linux-extras install epel -y
 sudo yum install git -y
-
-sudo yum install unzip -y
 sudo yum install mariadb-server -y
 
 # starting & enabling mariadb-server
@@ -14,7 +12,7 @@ sudo systemctl enable mariadb
 
 mkdir -p /tmp/provisioning
 cd /tmp/provisioning
-git clone -b main https://github.com/hkhcoder/vprofile-project.git
+sudo git clone -b main https://github.com/hkhcoder/vprofile-project.git
 
 #restore the dump file for the application
 sudo mysqladmin -u root password "$DATABASE_PASS"
@@ -25,7 +23,7 @@ sudo mysql -u root -p"$DATABASE_PASS" -e "FLUSH PRIVILEGES"
 sudo mysql -u root -p"$DATABASE_PASS" -e "create database accounts"
 sudo mysql -u root -p"$DATABASE_PASS" -e "grant all privileges on accounts.* TO 'admin'@'localhost' identified by 'admin123'"
 sudo mysql -u root -p"$DATABASE_PASS" -e "grant all privileges on accounts.* TO 'admin'@'%' identified by 'admin123'"
-sudo mysql -u root -p"$DATABASE_PASS" accounts < /tmp/vprofile-project/src/main/resources/db_backup.sql
+sudo mysql -u root -p"$DATABASE_PASS" accounts < /tmp/provisioning/vprofile-project/src/main/resources/db_backup.sql
 sudo mysql -u root -p"$DATABASE_PASS" -e "FLUSH PRIVILEGES"
 
 sudo systemctl restart mariadb
