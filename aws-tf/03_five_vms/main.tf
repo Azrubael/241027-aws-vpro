@@ -134,7 +134,7 @@ resource "aws_instance" "bastion" {
   credit_specification {
     cpu_credits = "standard"
   }
-  iam_instance_profile = var.INSTANCE_PROFILE_NAME
+  iam_instance_profile = module.instance_profile_setup.instance_profile_name
   tags = {
     Name = "jump01"
     Server = "Bastion"
@@ -152,7 +152,7 @@ resource "aws_instance" "frontend" {
   credit_specification {
     cpu_credits = "standard"
   }
-  iam_instance_profile = var.INSTANCE_PROFILE_NAME
+  iam_instance_profile = module.instance_profile_setup.instance_profile_name
   tags = {
     Name = "app01"
     Server = "TomCat"
