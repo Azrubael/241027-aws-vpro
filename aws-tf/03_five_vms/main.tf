@@ -138,6 +138,9 @@ resource "aws_instance" "bastion" {
   tags = {
     Name = "jump01"
     Server = "Bastion"
+    db_ip = var.DATABASE_IP
+    mc_ip = var.MEMCACHE_IP
+    rmq_ip = var.RABBITMQ_IP
   }
   user_data = templatefile("${path.module}/vm-template-scripts/jump-template-script.sh", {})
 }
