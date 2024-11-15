@@ -4,13 +4,12 @@
 
 TOMURL="https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.75/bin/apache-tomcat-9.0.75.tar.gz"
 
-CUSTOM_IPs="""### custom IPs
+
+sudo echo -e "### custom IPs
 ${db_ip}	db01
 ${mc_ip}	mc01
 ${rmq_ip}	rmq01
-###"""
-
-sudo echo $CUSTOM_IPs >> /etc/hosts
+###" >> /etc/hosts
 mkdir -p /tmp/provisioning
 cd /tmp/provisioning
 aws s3 cp "s3://${S3_BUCKET_NAME}/aws-vm/application.properties" .

@@ -5,13 +5,11 @@ sudo yum makecache
 sudo amazon-linux-extras install epel -y
 sudo yum install memcached -y
 
-CUSTOM_IPs="""### custom IPs
+sudo echo -e "### custom IPs
 ${db_ip}	db01
 ${mc_ip}	mc01
 ${rmq_ip}	rmq01
-###"""
-
-sudo echo $CUSTOM_IPs >> /etc/hosts
+###" >> /etc/hosts
 
 sudo systemctl start memcached
 sudo systemctl enable memcached

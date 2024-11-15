@@ -74,8 +74,7 @@ variable "BACKEND_PORTS" {
     ["tcp", 22],
     ["tcp", 11211],
     ["tcp", 5672],
-    ["tcp", 3306],
-    ["all", 0]
+    ["tcp", 3306]
   ]
 }
 

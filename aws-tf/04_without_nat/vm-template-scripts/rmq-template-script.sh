@@ -6,13 +6,11 @@
 sudo yum makecache
 sudo yum install epel-release -y
 
-CUSTOM_IPs="""### custom IPs
+sudo echo -e "### custom IPs
 ${db_ip}	db01
 ${mc_ip}	mc01
 ${rmq_ip}	rmq01
-###"""
-
-sudo echo $CUSTOM_IPs >> /etc/hosts
+###" >> /etc/hosts
 
 sudo dnf -y install centos-release-rabbitmq-38
 sudo dnf --enablerepo=centos-rabbitmq-38 -y install rabbitmq-server

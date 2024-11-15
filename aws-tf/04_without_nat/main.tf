@@ -78,6 +78,7 @@ resource "aws_security_group" "back_sg" {
   description = "Backend security group for DB, MemcacheD and RabbitMQ servers."
   vpc_id      = data.aws_vpc.selected.id
 
+  # Ingress from FRONTEND_CIDR -- Begin of changes
   dynamic "ingress" {
     for_each = var.BACKEND_PORTS
 
@@ -85,9 +86,19 @@ resource "aws_security_group" "back_sg" {
       from_port   = ingress.value[1]
       to_port     = ingress.value[1]
       protocol    = ingress.value[0]
-      cidr_blocks = [var.WAN_IP] # Have to be 'var.FRONTEND_CIDR'
+      security_groups = [aws_security_group.front_sg.id]
+      
     }
   }
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [var.FRONTEND_CIDR]
+  }
+  # Ingress from FRONTEND_CIDR -- End of changes
+
 }
 
 module "instance_profile_setup" {
@@ -121,7 +132,6 @@ module "backend_nat" {
   vpc_net_id = data.aws_vpc.selected.id
   route_table_tag = "vpro_Backend_Route_Tabl"
 }
-*/
 
 # Run EC2 instance 'bastion'
 resource "aws_instance" "bastion" {
@@ -144,6 +154,7 @@ resource "aws_instance" "bastion" {
   }
   user_data = templatefile("${path.module}/vm-template-scripts/jump-template-script.sh", {})
 }
+*/
 
 # Run EC2 instance 'TomCat'
 resource "aws_instance" "frontend" {
@@ -151,6 +162,10 @@ resource "aws_instance" "frontend" {
   instance_type               = "t2.micro"
   key_name                    = "vpro-key"
   subnet_id                   = local.frontend_subnet_id
+  security_groups = [
+    aws_security_group.front_sg.id,
+    "sg-071a9f2961b63a152"
+  ]
   associate_public_ip_address = true
   credit_specification {
     cpu_credits = "standard"
@@ -174,7 +189,11 @@ resource "aws_instance" "backend" {
   instance_type               = "t2.micro"
   key_name                    = "vpro-key"
   subnet_id                   = local.backend_subnet_id
-  associate_public_ip_address = false
+  associate_public_ip_address = true        # CHANGED!
+  security_groups = [
+    aws_security_group.back_sg.id,
+    "sg-071a9f2961b63a152"
+  ]
   private_ip                  = var.DATABASE_IP
   credit_specification {
     cpu_credits = "standard"
@@ -188,13 +207,14 @@ resource "aws_instance" "backend" {
   })
 }
 
+/*
 # Run EC2 instance 'memcache'
 resource "aws_instance" "memcache" {
   ami                         = var.OS_IMAGE_ID
   instance_type               = "t2.micro"
   key_name                    = "vpro-key"
   subnet_id                   = local.backend_subnet_id
-  associate_public_ip_address = false
+  associate_public_ip_address = true        # CHANGED!
   private_ip                  = var.MEMCACHE_IP
   credit_specification {
     cpu_credits = "standard"
@@ -216,7 +236,7 @@ resource "aws_instance" "rabbitmq" {
   instance_type               = "t2.small"
   key_name                    = "vpro-key"
   subnet_id                   = local.backend_subnet_id
-  associate_public_ip_address = false
+  associate_public_ip_address = true        # CHANGED!
   private_ip                  = var.RABBITMQ_IP
   credit_specification {
     cpu_credits = "standard"
@@ -232,3 +252,4 @@ resource "aws_instance" "rabbitmq" {
   })
 }
 
+*/
