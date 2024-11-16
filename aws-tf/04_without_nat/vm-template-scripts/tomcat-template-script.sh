@@ -71,5 +71,6 @@ cd /tmp/provisioning
 sudo 7za x vpro.zip
 sudo cp vpro-v2.war /usr/local/tomcat/webapps/ROOT.war
 sudo cp -f /tmp/provisioning/application.properties /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+sudo chown -R tomcat.tomcat /usr/local/tomcat/webapps
 sudo systemctl start tomcat
 sudo systemctl enable tomcat

@@ -52,6 +52,13 @@ resource "aws_subnet" "backend" {
   }
 }
 
+# Get the "default" security group
+data "aws_security_group" "default" {
+  filter {
+    name   = "group-name"
+    values = ["default"]
+  }
+}
 
 # Create security group for frontend
 resource "aws_security_group" "front_sg" {
@@ -66,8 +73,15 @@ resource "aws_security_group" "front_sg" {
       from_port   = ingress.value[1]
       to_port     = ingress.value[1]
       protocol    = ingress.value[0]
-      cidr_blocks = [var.WAN_IP]
+      cidr_blocks = [var.WAN_CIDR]
     }
+  }
+
+  egress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    cidr_blocks = [ var.WAN_CIDR ]
   }
 }
 
@@ -86,7 +100,7 @@ resource "aws_security_group" "back_sg" {
       from_port   = ingress.value[1]
       to_port     = ingress.value[1]
       protocol    = ingress.value[0]
-      security_groups = [aws_security_group.front_sg.id]
+      security_groups = [ aws_security_group.front_sg.id ]
       
     }
   }
@@ -94,8 +108,21 @@ resource "aws_security_group" "back_sg" {
   ingress {
     from_port   = 0
     to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = [var.FRONTEND_CIDR]
+    protocol    = "all"
+    cidr_blocks = [
+      var.BACKEND_CIDR,
+      var.FRONTEND_CIDR
+    ]
+  }
+
+  egress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    cidr_blocks = [
+      var.BACKEND_CIDR,
+      var.FRONTEND_CIDR
+    ]
   }
   # Ingress from FRONTEND_CIDR -- End of changes
 
@@ -119,26 +146,31 @@ locals {
   backend_subnet_id = length(data.aws_subnet.backend) > 0 ? data.aws_subnet.backend[0].id : aws_subnet.backend[0].id
 }
 
-/* Uncomment after debugging
 module "backend_nat" {
   # Create Elastic IP for NAT gateway,
   # Create NAT gateway in 'frontend' public subnet,
   # Create route table for 'backend' private subnet,
   # Add route to the route table
   source = "./backend_nat"
-  wan = var.WAN_IP
+  wan = var.WAN_CIDR
   public_subnet_id = local.frontend_subnet_id
   private_subnet_id = local.backend_subnet_id
   vpc_net_id = data.aws_vpc.selected.id
   route_table_tag = "vpro_Backend_Route_Tabl"
 }
 
+/* Uncomment after debugging
 # Run EC2 instance 'bastion'
 resource "aws_instance" "bastion" {
   ami                         = var.OS_IMAGE_ID
   instance_type               = "t2.micro"
   key_name                    = "241107-key"
   subnet_id                   = local.frontend_subnet_id
+  security_groups = [ 
+    aws_security_group.front_sg.id,
+    data.aws_security_group.default.id
+  ]
+
   associate_public_ip_address = true
   private_ip                  = var.BASTION_IP
   credit_specification {
@@ -162,10 +194,7 @@ resource "aws_instance" "frontend" {
   instance_type               = "t2.micro"
   key_name                    = "vpro-key"
   subnet_id                   = local.frontend_subnet_id
-  security_groups = [
-    aws_security_group.front_sg.id,
-    "sg-071a9f2961b63a152"
-  ]
+  security_groups = [ aws_security_group.front_sg.id ]
   associate_public_ip_address = true
   credit_specification {
     cpu_credits = "standard"
@@ -189,11 +218,8 @@ resource "aws_instance" "backend" {
   instance_type               = "t2.micro"
   key_name                    = "vpro-key"
   subnet_id                   = local.backend_subnet_id
-  associate_public_ip_address = true        # CHANGED!
-  security_groups = [
-    aws_security_group.back_sg.id,
-    "sg-071a9f2961b63a152"
-  ]
+  associate_public_ip_address = false
+  security_groups = [ aws_security_group.back_sg.id ]
   private_ip                  = var.DATABASE_IP
   credit_specification {
     cpu_credits = "standard"

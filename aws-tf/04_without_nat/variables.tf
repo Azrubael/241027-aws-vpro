@@ -4,7 +4,7 @@ variable "VPC_NAME" {
   default     = "DEFAULT-VPC"
 }
 
-variable "WAN_IP" {
+variable "WAN_CIDR" {
   description = "Public IP address to reach the world outside"
   type        = string
   default     = "0.0.0.0/0"
@@ -39,7 +39,8 @@ variable "FRONTEND_PORTS" {
   type        = list(list(any))
   default = [
     ["tcp", 8080],
-    ["tcp", 22]
+    ["tcp", 22],
+    ["icmp", 0]
   ]
 }
 
@@ -74,7 +75,8 @@ variable "BACKEND_PORTS" {
     ["tcp", 22],
     ["tcp", 11211],
     ["tcp", 5672],
-    ["tcp", 3306]
+    ["tcp", 3306],
+    ["icmp", 0]
   ]
 }
 
