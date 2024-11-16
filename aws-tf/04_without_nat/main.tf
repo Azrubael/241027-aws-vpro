@@ -101,7 +101,6 @@ resource "aws_security_group" "back_sg" {
       to_port     = ingress.value[1]
       protocol    = ingress.value[0]
       security_groups = [ aws_security_group.front_sg.id ]
-      
     }
   }
 
@@ -121,7 +120,8 @@ resource "aws_security_group" "back_sg" {
     protocol        = "-1"
     cidr_blocks = [
       var.BACKEND_CIDR,
-      var.FRONTEND_CIDR
+      var.FRONTEND_CIDR,
+      var.WAN_CIDR
     ]
   }
   # Ingress from FRONTEND_CIDR -- End of changes

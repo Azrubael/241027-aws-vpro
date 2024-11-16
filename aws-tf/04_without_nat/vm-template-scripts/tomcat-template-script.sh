@@ -16,6 +16,7 @@ aws s3 cp "s3://${S3_BUCKET_NAME}/aws-vm/application.properties" .
 aws s3 cp "s3://${S3_BUCKET_NAME}/artifact/vpro.zip" .
 aws s3 cp "s3://${S3_BUCKET_NAME}/artifact/vpro.z01" .
 aws s3 cp "s3://${S3_BUCKET_NAME}/artifact/vpro.z02" .
+aws s3 cp "s3://${S3_BUCKET_NAME}/artifact/mysql_check.py" .
 
 sudo yum makecache
 sudo yum install -y java-11-amazon-corretto
