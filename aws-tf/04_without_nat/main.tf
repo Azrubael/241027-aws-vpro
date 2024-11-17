@@ -68,7 +68,6 @@ resource "aws_security_group" "front_sg" {
 
   dynamic "ingress" {
     for_each = var.FRONTEND_PORTS
-
     content {
       from_port   = ingress.value[1]
       to_port     = ingress.value[1]
@@ -76,12 +75,41 @@ resource "aws_security_group" "front_sg" {
       cidr_blocks = [var.WAN_CIDR]
     }
   }
-
   egress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    cidr_blocks = [ var.WAN_CIDR ]
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    cidr_blocks     = [ "${var.DATABASE_IP}/32" ]
+  }
+  egress {
+    from_port       = 5627
+    to_port         = 5627
+    protocol        = "tcp"
+    cidr_blocks     = [ "${var.RABBITMQ_IP}/32" ]
+  }
+  egress {
+    from_port       = 11211
+    to_port         = 11211
+    protocol        = "tcp"
+    cidr_blocks     = [ "${var.MEMCACHE_IP}/32" ]
+  }
+  egress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    cidr_blocks     = [ var.WAN_CIDR ]
+  }
+  egress {
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    cidr_blocks     = [ var.WAN_CIDR ]
+  }
+  egress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    cidr_blocks     = [ var.BACKEND_CIDR ]
   }
 }
 
@@ -92,10 +120,8 @@ resource "aws_security_group" "back_sg" {
   description = "Backend security group for DB, MemcacheD and RabbitMQ servers."
   vpc_id      = data.aws_vpc.selected.id
 
-  # Ingress from FRONTEND_CIDR -- Begin of changes
   dynamic "ingress" {
     for_each = var.BACKEND_PORTS
-
     content {
       from_port   = ingress.value[1]
       to_port     = ingress.value[1]
@@ -103,29 +129,24 @@ resource "aws_security_group" "back_sg" {
       security_groups = [ aws_security_group.front_sg.id ]
     }
   }
-
   ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "all"
-    cidr_blocks = [
-      var.BACKEND_CIDR,
-      var.FRONTEND_CIDR
-    ]
+    from_port     = 0
+    to_port       = 0
+    protocol      = "-1"
+    self = true
   }
-
   egress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    cidr_blocks = [
-      var.BACKEND_CIDR,
-      var.FRONTEND_CIDR,
-      var.WAN_CIDR
-    ]
+    from_port     = 0
+    to_port       = 0
+    protocol      = "-1"
+    cidr_blocks   = [ var.WAN_CIDR ]
   }
-  # Ingress from FRONTEND_CIDR -- End of changes
-
+  egress {
+    from_port     = 0
+    to_port       = 0
+    protocol      = "-1"
+    self = true
+  }
 }
 
 module "instance_profile_setup" {
@@ -224,12 +245,14 @@ resource "aws_instance" "backend" {
   credit_specification {
     cpu_credits = "standard"
   }
+  iam_instance_profile = module.instance_profile_setup.instance_profile_name
   tags = {
     Name = "db01"
     Server = "MySQL"
   }
   user_data = templatefile("${path.module}/vm-template-scripts/db-template-script.sh", {
     DATABASE_PASS = var.DB_PASS
+    S3_BUCKET_NAME = var.BUCKET_NAME
   })
 }
 

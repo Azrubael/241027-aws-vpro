@@ -12,7 +12,7 @@ sudo systemctl enable mariadb
 
 mkdir -p /tmp/provisioning
 cd /tmp/provisioning
-sudo git clone -b main https://github.com/hkhcoder/vprofile-project.git
+aws s3 cp "s3://${S3_BUCKET_NAME}/artifact/db_backup.sql" .
 
 #restore the dump file for the application
 sudo mysqladmin -u root password "$DATABASE_PASS"
@@ -23,7 +23,7 @@ sudo mysql -u root -p"$DATABASE_PASS" -e "FLUSH PRIVILEGES"
 sudo mysql -u root -p"$DATABASE_PASS" -e "create database accounts"
 sudo mysql -u root -p"$DATABASE_PASS" -e "grant all privileges on accounts.* TO 'admin'@'localhost' identified by 'admin123'"
 sudo mysql -u root -p"$DATABASE_PASS" -e "grant all privileges on accounts.* TO 'admin'@'%' identified by 'admin123'"
-sudo mysql -u root -p"$DATABASE_PASS" accounts < /tmp/provisioning/vprofile-project/src/main/resources/db_backup.sql
+sudo mysql -u root -p"$DATABASE_PASS" accounts < /tmp/provisioning/db_backup.sql
 sudo mysql -u root -p"$DATABASE_PASS" -e "FLUSH PRIVILEGES"
 
 sudo systemctl restart mariadb

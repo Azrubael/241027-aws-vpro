@@ -110,7 +110,8 @@ if __name__ == "__main__":
         "artifact/vpro.z01",
         "artifact/vpro.z02",
         "artifact/application.properties",
-        "artifact/mysql_check.py"
+        "artifact/mysql_check.py",
+        "artifact/db_backup.sql"
     ]
 
     # Define the trust policy for the IAM role

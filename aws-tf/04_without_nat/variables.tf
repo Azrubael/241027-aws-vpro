@@ -39,6 +39,7 @@ variable "FRONTEND_PORTS" {
   type        = list(list(any))
   default = [
     ["tcp", 8080],
+    ["udp", 8080],
     ["tcp", 22],
     ["icmp", 0]
   ]
