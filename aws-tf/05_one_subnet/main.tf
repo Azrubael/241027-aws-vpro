@@ -48,28 +48,28 @@ resource "aws_security_group" "jump_sg" {
     from_port     = 22
     to_port       = 22
     protocol      = "tcp"
-    cidr_blocks = [ var.WAN_CIDR ]
+    cidr_blocks   = [ var.WAN_CIDR ]
   }
 
   ingress { # ICMP: 0='echo reply', 8='echo request', -1=unlimited
     from_port     = -1
     to_port       = -1
     protocol      = "icmp"
-    cidr_blocks = [ var.WAN_CIDR ]
+    cidr_blocks   = [ var.WAN_CIDR ]
   }
 
   egress {
     from_port     = -1
     to_port       = -1
     protocol      = "icmp"
-    cidr_blocks = [ var.WAN_CIDR ]
+    cidr_blocks   = [ var.WAN_CIDR ]
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = [ var.WAN_CIDR ]
+    from_port     = 0
+    to_port       = 0
+    protocol      = "-1"
+    cidr_blocks   = [ var.WAN_CIDR ]
   }
 
 }
@@ -81,39 +81,38 @@ resource "aws_security_group" "front_sg" {
   description = "Frontend security group for application servers."
   vpc_id      = data.aws_vpc.selected.id
 
-  ingress {
-      from_port   = ingress.value[1]
-      to_port     = ingress.value[1]
-      protocol    = ingress.value[0]
-      cidr_blocks = [ var.WAN_CIDR ]
+  dynamic "ingress" {
+    for_each = var.FRONTEND_INGRESS
+    content {
+      from_port     = ingress.value[1]
+      to_port       = ingress.value[1]
+      protocol      = ingress.value[0]
+      cidr_blocks   = [ var.WAN_CIDR ]
+    }
   }
 
   ingress {
-    from_port     = 22
-    to_port       = 22
-    protocol      = "tcp"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
     security_groups = [ aws_security_group.jump_sg.id ]
   }
 
   ingress { # ICMP: 0='echo reply', 8='echo request', -1=unlimited
-    from_port     = 0
-    to_port       = 0
-    protocol      = "icmp"
+    from_port       = 0
+    to_port         = 0
+    protocol        = "icmp"
     security_groups = [ aws_security_group.jump_sg.id ]
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = [ var.WAN_CIDR ]
-  }
-
-  egress {
-    from_port     = 0
-    to_port       = 0
-    protocol      = "icmp"
-    security_groups = [ aws_security_group.jump_sg.id ]
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    cidr_blocks     = [
+      var.WAN_CIDR,
+      var.SANDBOX_CIDR
+    ]
   }
 
 }
@@ -128,9 +127,9 @@ resource "aws_security_group" "back_sg" {
   dynamic "ingress" {
     for_each = var.BACKEND_INGRESS
     content {
-      from_port   = ingress.value[1]
-      to_port     = ingress.value[1]
-      protocol    = ingress.value[0]
+      from_port       = ingress.value[1]
+      to_port         = ingress.value[1]
+      protocol        = ingress.value[0]
       security_groups = [
         aws_security_group.front_sg.id,
         aws_security_group.jump_sg.id
@@ -139,34 +138,40 @@ resource "aws_security_group" "back_sg" {
   }
 
   ingress {
-    from_port     = 0
-    to_port       = 0
-    protocol      = "-1"
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
     self = true
   }
 
   ingress {
-    from_port     = 0
-    to_port       = 0
-    protocol      = "icmp"
+    from_port       = 0
+    to_port         = 0
+    protocol        = "icmp"
     security_groups = [ aws_security_group.jump_sg.id ]
   }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = [
-      var.WAN_CIDR,
-      var.SANDBOX_CIDR
-    ]
-  }
+  # egress {
+  #   from_port       = 0
+  #   to_port         = 0
+  #   protocol        = "-1"
+  #   cidr_blocks     = [
+  #     var.WAN_CIDR,
+  #     var.SANDBOX_CIDR
+  #   ]
+  # }
 
-  egress {
-    from_port     = 0
-    to_port       = 0
-    protocol      = "icmp"
-    security_groups = [ aws_security_group.jump_sg.id ]
+  dynamic "egress" {
+    for_each = var.BACKEND_EGRESS
+    content {
+      from_port     = egress.value[1]
+      to_port       = egress.value[1]
+      protocol      = egress.value[0]
+      cidr_blocks     = [
+        var.WAN_CIDR,
+        var.SANDBOX_CIDR
+      ]   
+    }
   }
 
 }
@@ -219,12 +224,11 @@ resource "aws_instance" "backend" {
   instance_type               = "t2.micro"
   key_name                    = "vpro-key"
   subnet_id                   = local.sandbox_subnet_id
-  associate_public_ip_address = false
+  associate_public_ip_address = true  # ------ CHANGED! ------
   security_groups = [ aws_security_group.back_sg.id ]
   private_ip                  = var.DATABASE_IP
 
   credit_specification {
-
     cpu_credits = "standard"
   }
 

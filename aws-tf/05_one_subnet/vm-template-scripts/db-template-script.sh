@@ -13,6 +13,7 @@ sudo systemctl enable mariadb
 mkdir -p /tmp/provisioning
 cd /tmp/provisioning
 aws s3 cp "s3://${S3_BUCKET_NAME}/artifact/db_backup.sql" .
+sudo chmod 644 /tmp/provisioning/db_backup.sql
 
 #restore the dump file for the application
 sudo mysqladmin -u root password "$DATABASE_PASS"
