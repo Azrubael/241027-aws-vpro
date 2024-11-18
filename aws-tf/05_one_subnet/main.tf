@@ -13,9 +13,10 @@ data "aws_vpc" "selected" {
 
 # Get or create sandbox subnet
 data "aws_subnet" "sandbox" {
-  count = var.SANDBOX_CIDR == cidrsubnet(data.aws_vpc.selected.cidr_block, 4, 2) ? 1 : 0
+  # count = var.SANDBOX_CIDR == cidrsubnet(data.aws_vpc.selected.cidr_block, 4, 2) ? 1 : 0
+  count = length(data.aws_vpc.selected.id) > 0 && var.SANDBOX_CIDR == cidrsubnet(data.aws_vpc.selected.cidr_block, 4, 2) ? 1 : 0
   filter {
-    name   = "tag:Name"  # Change to filter by the Name tag
+    name   = "tag:Name"
     values = [var.SANDBOX_SUBNET_NAME]
   }
   vpc_id = data.aws_vpc.selected.id
@@ -24,16 +25,16 @@ data "aws_subnet" "sandbox" {
 # Assign tag to the subnet if it doesn't exist
 resource "aws_subnet" "sandbox" {
   count = length(data.aws_subnet.sandbox) == 0 ? 1 : 0
+  vpc_id = data.aws_vpc.selected.id
   cidr_block = var.SANDBOX_CIDR
   tags = {
     Name = var.SANDBOX_SUBNET_NAME
   }
-  vpc_id = data.aws_vpc.selected.id
 }
 
-# Assign subnet ID
 locals {
-  sandbox_subnet_id = length(aws_subnet.sandbox) > 0 ? aws_subnet.sandbox[0].id : null
+  # Assign subnet ID if it exists or the ID of the newly created one
+  sandbox_subnet_id = length(data.aws_subnet.sandbox) > 0 ? data.aws_subnet.sandbox[0].id : aws_subnet.sandbox[0].id
 }
 
 
@@ -53,32 +54,22 @@ resource "aws_security_group" "front_sg" {
     }
   }
 
-  # egress {
-  #   from_port   = 0
-  #   to_port     = 0
-  #   protocol    = "-1"
-  #   cidr_blocks = [ var.WAN_CIDR ]
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [ var.WAN_CIDR ]
+  }
+
+  # dynamic "egress" {
+  #   for_each = var.BACKEND_INGRESS
+  #   content {
+  #     from_port   = egress.value[1]
+  #     to_port     = egress.value[1]
+  #     protocol    = egress.value[0]
+  #     cidr_blocks = [ var.SANDBOX_CIDR ]
+  #   }
   # }
-
-  dynamic "egress" {
-    for_each = var.FRONTEND_EGRESS
-    content {
-      from_port   = egress.value[1]
-      to_port     = egress.value[1]
-      protocol    = egress.value[0]
-      cidr_blocks = [ var.WAN_CIDR, var.SANDBOX_CIDR ]
-    }
-  }
-
-  dynamic "egress" {
-    for_each = var.BACKEND_INGRESS
-    content {
-      from_port   = egress.value[1]
-      to_port     = egress.value[1]
-      protocol    = egress.value[0]
-      cidr_blocks = [ var.SANDBOX_CIDR ]
-    }
-  }
 
 }
 
@@ -104,6 +95,13 @@ resource "aws_security_group" "back_sg" {
     to_port       = 0
     protocol      = "-1"
     self = true
+  }
+
+  ingress {
+    from_port     = 0
+    to_port       = 0
+    protocol      = "icmp"
+    security_groups = [ aws_security_group.front_sg.id ]
   }
 
   egress {
@@ -192,8 +190,8 @@ resource "aws_instance" "memcache" {
   ami                         = var.OS_IMAGE_ID
   instance_type               = "t2.micro"
   key_name                    = "vpro-key"
-  subnet_id                   = local.backend_subnet_id
-  associate_public_ip_address = true        # CHANGED!
+  subnet_id                   = local.sandbox_subnet_id
+  associate_public_ip_address = false
   private_ip                  = var.MEMCACHE_IP
   credit_specification {
     cpu_credits = "standard"
@@ -214,8 +212,8 @@ resource "aws_instance" "rabbitmq" {
   ami                         = "ami-0df2a11dd1fe1f8e3"
   instance_type               = "t2.small"
   key_name                    = "vpro-key"
-  subnet_id                   = local.backend_subnet_id
-  associate_public_ip_address = true        # CHANGED!
+  subnet_id                   = local.sandbox_subnet_id
+  associate_public_ip_address = false
   private_ip                  = var.RABBITMQ_IP
   credit_specification {
     cpu_credits = "standard"
@@ -231,30 +229,37 @@ resource "aws_instance" "rabbitmq" {
   })
 }
 
+
+*/
 # Run EC2 instance 'bastion'
 resource "aws_instance" "bastion" {
   ami                         = var.OS_IMAGE_ID
   instance_type               = "t2.micro"
   key_name                    = "241107-key"
-  subnet_id                   = local.frontend_subnet_id
-  security_groups = [ 
-    aws_security_group.front_sg.id,
-    data.aws_security_group.default.id
-  ]
-
+  subnet_id                   = local.sandbox_subnet_id
   associate_public_ip_address = true
   private_ip                  = var.BASTION_IP
+
+  security_groups = [ 
+    aws_security_group.front_sg.id
+  ]
+
   credit_specification {
     cpu_credits = "standard"
   }
+
   iam_instance_profile = module.instance_profile_setup.instance_profile_name
   tags = {
     Name = "jump01"
     Server = "Bastion"
+
+  }
+ 
+  user_data = templatefile("${path.module}/vm-template-scripts/jump-template-script.sh", {
     db_ip = var.DATABASE_IP
     mc_ip = var.MEMCACHE_IP
     rmq_ip = var.RABBITMQ_IP
-  }
-  user_data = templatefile("${path.module}/vm-template-scripts/jump-template-script.sh", {})
+    S3_BUCKET_NAME = var.BUCKET_NAME
+  })
 }
-*/
+

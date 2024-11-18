@@ -10,4 +10,4 @@ ${rmq_ip}	rmq01
 ###" >> /etc/hosts
 
 sudo yum makecache
-sudo yum install mc git -y
+sudo yum install mc -y

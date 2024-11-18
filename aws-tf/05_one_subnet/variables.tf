@@ -64,18 +64,7 @@ variable "FRONTEND_INGRESS" {
   default = [
     ["tcp", 8080],
     ["udp", 8080],
-    ["tcp", 22],
-    ["icmp", 0]
-  ]
-}
-
-variable "FRONTEND_EGRESS" {
-  description = "An array containing data for creating frontend security group rules"
-  type        = list(list(any))
-  default = [
-    ["tcp", 80],
-    ["tcp", 443],
-    ["icmp", 0]
+    ["tcp", 22]
   ]
 }
 
@@ -98,8 +87,7 @@ variable "BACKEND_INGRESS" {
     ["tcp", 22],
     ["tcp", 11211],
     ["tcp", 5672],
-    ["tcp", 3306],
-    ["icmp", 0]
+    ["tcp", 3306]
   ]
 }
 
