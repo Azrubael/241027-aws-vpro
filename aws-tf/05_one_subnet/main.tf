@@ -38,20 +38,31 @@ locals {
 }
 
 
-# Create a security group for frontend
-resource "aws_security_group" "front_sg" {
-  name        = "front-sg"
-  description = "Frontend security group for application and jump servers."
+# Create a security group for a jump server
+resource "aws_security_group" "jump_sg" {
+  name        = "jump-sg"
+  description = "Bastion security group."
   vpc_id      = data.aws_vpc.selected.id
 
-  dynamic "ingress" {
-    for_each = var.FRONTEND_INGRESS
-    content {
-      from_port   = ingress.value[1]
-      to_port     = ingress.value[1]
-      protocol    = ingress.value[0]
-      cidr_blocks = [ var.WAN_CIDR ]
-    }
+  ingress {
+    from_port     = 22
+    to_port       = 22
+    protocol      = "tcp"
+    cidr_blocks = [ var.WAN_CIDR ]
+  }
+
+  ingress { # ICMP: 0='echo reply', 8='echo request', -1=unlimited
+    from_port     = -1
+    to_port       = -1
+    protocol      = "icmp"
+    cidr_blocks = [ var.WAN_CIDR ]
+  }
+
+  egress {
+    from_port     = -1
+    to_port       = -1
+    protocol      = "icmp"
+    cidr_blocks = [ var.WAN_CIDR ]
   }
 
   egress {
@@ -61,15 +72,49 @@ resource "aws_security_group" "front_sg" {
     cidr_blocks = [ var.WAN_CIDR ]
   }
 
-  # dynamic "egress" {
-  #   for_each = var.BACKEND_INGRESS
-  #   content {
-  #     from_port   = egress.value[1]
-  #     to_port     = egress.value[1]
-  #     protocol    = egress.value[0]
-  #     cidr_blocks = [ var.SANDBOX_CIDR ]
-  #   }
-  # }
+}
+
+
+# Create a security group for frontend
+resource "aws_security_group" "front_sg" {
+  name        = "front-sg"
+  description = "Frontend security group for application servers."
+  vpc_id      = data.aws_vpc.selected.id
+
+  ingress {
+      from_port   = ingress.value[1]
+      to_port     = ingress.value[1]
+      protocol    = ingress.value[0]
+      cidr_blocks = [ var.WAN_CIDR ]
+  }
+
+  ingress {
+    from_port     = 22
+    to_port       = 22
+    protocol      = "tcp"
+    security_groups = [ aws_security_group.jump_sg.id ]
+  }
+
+  ingress { # ICMP: 0='echo reply', 8='echo request', -1=unlimited
+    from_port     = 0
+    to_port       = 0
+    protocol      = "icmp"
+    security_groups = [ aws_security_group.jump_sg.id ]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [ var.WAN_CIDR ]
+  }
+
+  egress {
+    from_port     = 0
+    to_port       = 0
+    protocol      = "icmp"
+    security_groups = [ aws_security_group.jump_sg.id ]
+  }
 
 }
 
@@ -86,7 +131,10 @@ resource "aws_security_group" "back_sg" {
       from_port   = ingress.value[1]
       to_port     = ingress.value[1]
       protocol    = ingress.value[0]
-      security_groups = [ aws_security_group.front_sg.id ]
+      security_groups = [
+        aws_security_group.front_sg.id,
+        aws_security_group.jump_sg.id
+      ]
     }
   }
 
@@ -101,14 +149,24 @@ resource "aws_security_group" "back_sg" {
     from_port     = 0
     to_port       = 0
     protocol      = "icmp"
-    security_groups = [ aws_security_group.front_sg.id ]
+    security_groups = [ aws_security_group.jump_sg.id ]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [
+      var.WAN_CIDR,
+      var.SANDBOX_CIDR
+    ]
   }
 
   egress {
     from_port     = 0
     to_port       = 0
-    protocol      = "-1"
-    cidr_blocks   = [ var.WAN_CIDR ]
+    protocol      = "icmp"
+    security_groups = [ aws_security_group.jump_sg.id ]
   }
 
 }
@@ -241,7 +299,8 @@ resource "aws_instance" "bastion" {
   private_ip                  = var.BASTION_IP
 
   security_groups = [ 
-    aws_security_group.front_sg.id
+    aws_security_group.front_sg.id, 
+    aws_security_group.jump_sg.id
   ]
 
   credit_specification {
