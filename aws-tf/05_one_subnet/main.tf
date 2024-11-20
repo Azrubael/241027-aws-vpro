@@ -246,14 +246,14 @@ resource "aws_instance" "backend" {
 
 }
 
-/*
+
 # Run EC2 instance 'memcache'
 resource "aws_instance" "memcache" {
   ami                         = var.OS_IMAGE_ID
   instance_type               = "t2.micro"
   key_name                    = "vpro-key"
   subnet_id                   = local.sandbox_subnet_id
-  associate_public_ip_address = false
+  associate_public_ip_address = true
   private_ip                  = var.MEMCACHE_IP
   credit_specification {
     cpu_credits = "standard"
@@ -275,7 +275,7 @@ resource "aws_instance" "rabbitmq" {
   instance_type               = "t2.small"
   key_name                    = "vpro-key"
   subnet_id                   = local.sandbox_subnet_id
-  associate_public_ip_address = false
+  associate_public_ip_address = true
   private_ip                  = var.RABBITMQ_IP
   credit_specification {
     cpu_credits = "standard"
@@ -292,7 +292,6 @@ resource "aws_instance" "rabbitmq" {
 }
 
 
-*/
 # Run EC2 instance 'bastion'
 resource "aws_instance" "bastion" {
   ami                         = var.OS_IMAGE_ID
