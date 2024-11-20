@@ -11,9 +11,8 @@ data "aws_vpc" "selected" {
 }
 
 
-# Get or create sandbox subnet
+# Get or create the first sandbox subnet
 data "aws_subnet" "sandbox" {
-  # count = var.SANDBOX_CIDR == cidrsubnet(data.aws_vpc.selected.cidr_block, 4, 2) ? 1 : 0
   count = length(data.aws_vpc.selected.id) > 0 && var.SANDBOX_CIDR == cidrsubnet(data.aws_vpc.selected.cidr_block, 4, 2) ? 1 : 0
   filter {
     name   = "tag:Name"
@@ -32,9 +31,32 @@ resource "aws_subnet" "sandbox" {
   }
 }
 
+
+# Get or create the second sandbox subnet
+data "aws_subnet" "sandbox16" {
+  count = length(data.aws_vpc.selected.id) > 0 && var.SANDBOX_16_CIDR == cidrsubnet(data.aws_vpc.selected.cidr_block, 4, 2) ? 1 : 0
+  filter {
+    name   = "tag:Name"
+    values = [var.SANDBOX_16_SUBNET_NAME]
+  }
+  vpc_id = data.aws_vpc.selected.id
+}
+
+# Assign tag to the subnet if it doesn't exist
+resource "aws_subnet" "sandbox16" {
+  count = length(data.aws_subnet.sandbox16) == 0 ? 1 : 0
+  vpc_id = data.aws_vpc.selected.id
+  cidr_block = var.SANDBOX_16_CIDR
+  tags = {
+    Name = var.SANDBOX_16_SUBNET_NAME
+  }
+}
+
+
 locals {
   # Assign subnet ID if it exists or the ID of the newly created one
   sandbox_subnet_id = length(data.aws_subnet.sandbox) > 0 ? data.aws_subnet.sandbox[0].id : aws_subnet.sandbox[0].id
+  sandbox_subnet16_id = length(data.aws_subnet.sandbox16) > 0 ? data.aws_subnet.sandbox16[0].id : aws_subnet.sandbox16[0].id
 }
 
 
@@ -48,7 +70,7 @@ module "instance_profile_setup" {
   instance_profile_name = var.INSTANCE_PROFILE_NAME
 }
 
-
+/*
 # Run EC2 instance 'TomCat'
 resource "aws_instance" "frontend" {
   ami             = var.OS_IMAGE_ID
@@ -56,7 +78,7 @@ resource "aws_instance" "frontend" {
   key_name        = "vpro-key"
   subnet_id       = local.sandbox_subnet_id
   security_groups = [ aws_security_group.sg_front.id ]
-  associate_public_ip_address = true
+  associate_public_ip_address = false
   iam_instance_profile = module.instance_profile_setup.instance_profile_name
 
   credit_specification {
@@ -74,7 +96,7 @@ resource "aws_instance" "frontend" {
   })
 }
 
-/*
+
 # Run EC2 instance 'MySQL'
 resource "aws_instance" "backend" {
   ami                         = var.OS_IMAGE_ID

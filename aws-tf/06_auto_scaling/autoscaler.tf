@@ -1,28 +1,4 @@
-# Создание Load Balancer
-resource "aws_elb" "tomcat_elb" {
-  name                  = "tomcat-elb"
-  availability_zones    = data.aws_vpc.selected.availability_zones
-  security_groups       = [ aws_security_group.sg_elb.id ]
-
-  listener {
-    instance_port       = 8080
-    instance_protocol   = "HTTP"
-    lb_port             = 80
-    lb_protocol         = "HTTP"
-  }
-  health_check {
-    target              = "HTTP:8080/"
-    interval            = 30
-    timeout             = 5
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-  }
-  tags = {
-    Name = "Tomcat ELB"
-  }
-}
-
-# Создание Launch Configuration для Autoscaling Group
+# Create Launch Configuration for TomCat Autoscaling Group `tomcat_asg`
 resource "aws_launch_configuration" "tomcat_lc" {
   name                 = "tomcat-launch-conf"
   image_id             = var.OS_IMAGE_ID
@@ -37,12 +13,14 @@ resource "aws_launch_configuration" "tomcat_lc" {
       S3_BUCKET_NAME     = var.BUCKET_NAME
     }
   )
+
   lifecycle {
     create_before_destroy = true
   }
 }
 
-# Создание Autoscaling Group
+
+# Create Autoscaling Group
 resource "aws_autoscaling_group" "tomcat_asg" {
   launch_configuration      = aws_launch_configuration.tomcat_lc.id
   min_size                  = 1
@@ -50,7 +28,7 @@ resource "aws_autoscaling_group" "tomcat_asg" {
   desired_capacity          = 1
   vpc_zone_identifier       = [local.sandbox_subnet_id]
   health_check_type         = "ELB"
-  health_check_grace_period = 300
+  health_check_grace_period = 60 # seconds
 
   tag {
     key                     = "Name"
@@ -59,26 +37,29 @@ resource "aws_autoscaling_group" "tomcat_asg" {
   }
 }
 
-# Создание политики масштабирования для увеличения
+
+# Create autoscaling policy to scale out
 resource "aws_autoscaling_policy" "scale_out" {
   name                   = "scale-out"
-  scaling_adjustment     = 1
+  scaling_adjustment     = 1   # Scale up by 1
   adjustment_type        = "ChangeInCapacity"
-  cooldown               = 300
+  cooldown               = 120 # seconds
   autoscaling_group_name = aws_autoscaling_group.tomcat_asg.name
 }
 
-# Создание политики масштабирования для уменьшения
+
+# Create autoscaling policy to scale in
 resource "aws_autoscaling_policy" "scale_in" {
   name                   = "scale-in"
-  scaling_adjustment     = -1
+  scaling_adjustment     = -1  # Scale down by 1
   adjustment_type        = "ChangeInCapacity"
-  cooldown               = 300
+  cooldown               = 120 # seconds
   autoscaling_group_name = aws_autoscaling_group.tomcat_asg.name
 }
 
-# Настройка целевого отслеживания для автоматического масштабирования
-resource "aws_appautoscaling_target" "tomcat_target" {
+
+# Setup Target Tracking Scaling
+resource "aws_appautoscaling_target" "front_end" {
   max_capacity          = 3
   min_capacity          = 1
   resource_id           = "autoScalingGroup:${aws_autoscaling_group.tomcat_asg.id}"
@@ -86,21 +67,23 @@ resource "aws_appautoscaling_target" "tomcat_target" {
   service_namespace     = "aws:autoscaling"
 }
 
-resource "aws_appautoscaling_policy" "request_count_policy" {
+
+# Define an application autoscaling policy
+resource "aws_appautoscaling_policy" "tomcat_asg_policy" {
   name                  = "request-count-policy"
   policy_type           = "TargetTrackingScaling"
-  resource_id           = aws_appautoscaling_target.tomcat_target.id
-  scalable_dimension    = aws_appautoscaling_target.tomcat_target.scalable_dimension
-  service_namespace     = aws_appautoscaling_target.tomcat_target.service_namespace
+  resource_id           = aws_appautoscaling_target.front_end.id
+  scalable_dimension    = aws_appautoscaling_target.front_end.scalable_dimension
+  service_namespace     = aws_appautoscaling_target.front_end.service_namespace
 
   target_tracking_scaling_policy_configuration {
-    target_value        = 50
-    scale_in_cooldown   = 300
-    scale_out_cooldown  = 300
+    target_value        = 50  # % of requests to track
+    scale_in_cooldown   = 120 # seconds
+    scale_out_cooldown  = 120 # seconds
 
     predefined_metric_specification {
       predefined_metric_type = "ALBRequestCountPerTarget"
-      resource_label         = "${aws_alb.tomcat_alb.arn_suffix}/${aws_alb_target_group.tomcat_tg.arn_suffix}"
+      resource_label         = "${aws_alb.front_end.arn_suffix}/${aws_alb_target_group.front_end.arn_suffix}"
     }
   }
 

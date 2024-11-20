@@ -4,6 +4,10 @@ resource "aws_security_group" "sg_back" {
   description = "Backend security group for DB, MemcacheD and RabbitMQ servers."
   vpc_id      = data.aws_vpc.selected.id
 
+  tags = {
+    Name = "Backend Security Group"
+  }
+
   dynamic "ingress" {
     for_each = var.BACKEND_INGRESS
     content {

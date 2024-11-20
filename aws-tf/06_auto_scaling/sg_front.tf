@@ -4,13 +4,21 @@ resource "aws_security_group" "sg_front" {
   description = "Frontend security group for application servers."
   vpc_id      = data.aws_vpc.selected.id
 
+  tags = {
+    Name = "TomCat Frontend Security Group"
+  }
+
   dynamic "ingress" {
     for_each = var.FRONTEND_INGRESS
     content {
-      from_port     = ingress.value[1]
-      to_port       = ingress.value[1]
-      protocol      = ingress.value[0]
-      cidr_blocks   = [ var.WAN_CIDR ]
+      from_port      = ingress.value[1]
+      to_port        = ingress.value[1]
+      protocol       = ingress.value[0]
+      # cidr_blocks    = [ var.WAN_CIDR ]
+      security_groups = [ 
+        aws_security_group.sg_alb.id,
+        aws_security_group.sg_jump.id
+      ]
     }
   }
 

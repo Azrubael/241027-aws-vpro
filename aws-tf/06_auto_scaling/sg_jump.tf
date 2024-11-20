@@ -4,6 +4,10 @@ resource "aws_security_group" "sg_jump" {
   description = "Bastion security group."
   vpc_id      = data.aws_vpc.selected.id
 
+  tags = {
+    Name = "Bastion Security Group"
+  }
+
   ingress {
     from_port     = 22
     to_port       = 22
