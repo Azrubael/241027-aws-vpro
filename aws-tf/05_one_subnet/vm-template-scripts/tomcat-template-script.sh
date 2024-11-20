@@ -4,13 +4,24 @@
 
 TOMURL="https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.75/bin/apache-tomcat-9.0.75.tar.gz"
 
+
+sudo echo -e "### custom IPs
+${db_ip}	db01
+${mc_ip}	mc01
+${rmq_ip}	rmq01
+###" >> /etc/hosts
+mkdir -p /tmp/provisioning
+cd /tmp/provisioning
+aws s3 cp "s3://${S3_BUCKET_NAME}/aws-vm/application.properties" .
+aws s3 cp "s3://${S3_BUCKET_NAME}/artifact/vpro.zip" .
+aws s3 cp "s3://${S3_BUCKET_NAME}/artifact/vpro.z01" .
+aws s3 cp "s3://${S3_BUCKET_NAME}/artifact/vpro.z02" .
+aws s3 cp "s3://${S3_BUCKET_NAME}/artifact/mysql_check.py" .
+
 sudo yum makecache
 sudo yum install -y java-11-amazon-corretto
 sudo amazon-linux-extras install epel -y
 sudo yum install p7zip wget -y
-
-cd /tmp/provisioning
-sudo 7za x vpro.zip
 
 wget $TOMURL -O tomcatbin.tar.gz
 EXTOUT=`tar xzvf tomcatbin.tar.gz`
@@ -57,9 +68,10 @@ sudo systemctl stop tomcat
 sleep 5
 
 sudo rm -rf /usr/local/tomcat/webapps/ROOT*
-sudo cp /tmp/provisioning/vpro-v2.war /usr/local/tomcat/webapps/ROOT.war
+cd /tmp/provisioning
+sudo 7za x vpro.zip
+sudo cp vpro-v2.war /usr/local/tomcat/webapps/ROOT.war
 sudo cp -f /tmp/provisioning/application.properties /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/application.properties
+sudo chown -R tomcat.tomcat /usr/local/tomcat/webapps
 sudo systemctl start tomcat
 sudo systemctl enable tomcat
-sleep 5
-echo "Setup finished."
