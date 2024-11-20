@@ -11,7 +11,7 @@ variable "WAN_CIDR" {
 }
 
 variable "SANDBOX_CIDR" {
-  description = "Sandbox subnet CIDR"
+  description = "Sandbox first subnet CIDR"
   type        = string
   default     = "172.31.32.0/20"
 }
@@ -19,7 +19,19 @@ variable "SANDBOX_CIDR" {
 variable "SANDBOX_SUBNET_NAME" {
   description = "Value of the tag 'Name' for the sandbox subnet"
   type        = string
-  default     = "SANDBOX-subnet"
+  default     = "SANDBOX-32-subnet"
+}
+
+variable "SANDBOX_16_CIDR" {
+  description = "Sandbox second subnet CIDR"
+  type        = string
+  default     = "172.31.16.0/20"
+}
+
+variable "SANDBOX_16_SUBNET_NAME" {
+  description = "Value of the tag 'Name' for the sandbox subnet"
+  type        = string
+  default     = "SANDBOX-16-subnet"
 }
 
 variable "DATABASE_IP" {
@@ -160,4 +172,14 @@ variable "SP_PRIVATE_KEY" {
 variable "SP_PASS" {
   description = "Doorward's password"
   type        = string
+}
+
+variable "LB_INGRESS" {
+  description = "An array containing data for creating a Load Balancer security group rules"
+  type        = list(list(any))
+  default = [
+    ["tcp", 80],
+    ["tcp", 443],
+    ["icmp", 0]
+  ]
 }
