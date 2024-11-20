@@ -11,15 +11,21 @@
 ##### Also it has 'bastion NAT' to connect backend with WAN.
 ##### This configuration was run on the default VPC with two subnets.
 
-./03_five_vms
+./05_one_subnet
 ##### The more complicate variant with the next servers:
 - Bastion [jump01]
 - TomCat [app01]
 - MySQL [db01]
 - MemcacheD [mc01]
 - RabbitMQ [rmq01]
-##### Also it has 'bastion NAT' to connect backend with WAN.
-##### This configuration was run on the default VPC with two subnets.
+##### This configuration was run on the default VPC in one 'SANDBOX-subnet'.
+
+./06_auto_scaling
+##### Three servers:
+- Bastion [jump01]
+- TomCat [app01]
+- MySQL [db01]
+##### This configuration was run on the default VPC in one 'SANDBOX-subnet'.
 
 
 2. The deployment order using Terraform:

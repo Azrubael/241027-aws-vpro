@@ -57,25 +57,21 @@ resource "aws_instance" "frontend" {
   subnet_id       = local.sandbox_subnet_id
   security_groups = [ aws_security_group.front_sg.id ]
   associate_public_ip_address = true
+  iam_instance_profile = module.instance_profile_setup.instance_profile_name
 
   credit_specification {
     cpu_credits   = "standard"
   }
-
-  iam_instance_profile = module.instance_profile_setup.instance_profile_name
-
   tags = {
     Name    = "app01"
     Server  = "TomCat"
   }
-
   user_data = templatefile("${path.module}/vm-template-scripts/tomcat-template-script.sh", {
     db_ip           = var.DATABASE_IP
     mc_ip           = var.MEMCACHE_IP
     rmq_ip          = var.RABBITMQ_IP
     S3_BUCKET_NAME  = var.BUCKET_NAME
   })
-  depends_on = [ aws_subnet.sandbox, aws_security_group.front_sg ]
 }
 
 
@@ -87,27 +83,22 @@ resource "aws_instance" "backend" {
   subnet_id                   = local.sandbox_subnet_id
   associate_public_ip_address = true  # ------ CHANGED! ------
   private_ip                  = var.DATABASE_IP
+  iam_instance_profile = module.instance_profile_setup.instance_profile_name
 
   security_groups = [
     aws_security_group.back_sg.id
   ]
-
   credit_specification {
     cpu_credits = "standard"
   }
-
-  iam_instance_profile = module.instance_profile_setup.instance_profile_name
-
   tags = {
     Name    = "db01"
     Server  = "MySQL"
   }
-
   user_data = templatefile("${path.module}/vm-template-scripts/db-template-script.sh", {
     DATABASE_PASS  = var.DB_PASS
     S3_BUCKET_NAME = var.BUCKET_NAME
   })
-
 }
 
 
@@ -123,22 +114,20 @@ resource "aws_instance" "memcache" {
   security_groups = [
     aws_security_group.back_sg.id
   ]
-
   credit_specification {
     cpu_credits = "standard"
   }
-
   tags = {
     Name    = "mc01"
     Server  = "MemcacheD"
   }
-
   user_data = templatefile("${path.module}/vm-template-scripts/mc-template-script.sh", {
     db_ip   = var.DATABASE_IP
     mc_ip   = var.MEMCACHE_IP
     rmq_ip  = var.RABBITMQ_IP
   })
 }
+
 
 # Run EC2 instance 'rabbitmq' on  -= Amazon CentOS Stream 9 =-
 resource "aws_instance" "rabbitmq" {
@@ -152,16 +141,13 @@ resource "aws_instance" "rabbitmq" {
   security_groups = [
     aws_security_group.back_sg.id
   ]
-
   credit_specification {
     cpu_credits = "standard"
   }
-
   tags = {
     Name    = "rmq01"
     Server  = "RabbitMQ"
   }
-
   user_data = templatefile("${path.module}/vm-template-scripts/rmq-template-script.sh", {
     db_ip   = var.DATABASE_IP
     mc_ip   = var.MEMCACHE_IP
@@ -178,23 +164,19 @@ resource "aws_instance" "bastion" {
   subnet_id                   = local.sandbox_subnet_id
   associate_public_ip_address = true
   private_ip                  = var.BASTION_IP
+  iam_instance_profile = module.instance_profile_setup.instance_profile_name
 
   security_groups = [ 
     aws_security_group.front_sg.id, 
     aws_security_group.jump_sg.id
   ]
-
   credit_specification {
     cpu_credits = "standard"
   }
-
-  iam_instance_profile = module.instance_profile_setup.instance_profile_name
-
   tags = {
     Name    = "jump01"
     Server  = "Bastion"
   }
-
   user_data = templatefile("${path.module}/vm-template-scripts/jump-template-script.sh", {
     db_ip           = var.DATABASE_IP
     mc_ip           = var.MEMCACHE_IP
@@ -202,4 +184,3 @@ resource "aws_instance" "bastion" {
     S3_BUCKET_NAME  = var.BUCKET_NAME
   })
 }
-

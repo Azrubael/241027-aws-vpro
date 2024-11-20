@@ -13,22 +13,14 @@ output "db_private_IP" {
    value = aws_instance.backend.private_ip
 }
 
-# output "memcache_private_IP" {
-#   description = "value of the private IP address of the MemcacheD server"
-#   value = aws_instance.memcache.private_ip
-# }
-
-# output "rabbitmq_private_IP" {
-#   description = "value of the private IP address of the RabbitMQ server"
-#   value = aws_instance.rabbitmq.private_ip
-# }
-
-output "db_instance_ID" {
-   value = aws_instance.backend.id
+output "memcache_private_IP" {
+  description = "value of the private IP address of the MemcacheD server"
+  value = aws_instance.memcache.private_ip
 }
 
-output "bastion_instance_ID" {
-  value = aws_instance.backend.id
+output "rabbitmq_private_IP" {
+  description = "value of the private IP address of the RabbitMQ server"
+  value = aws_instance.rabbitmq.private_ip
 }
 
 output "ec2_instance_profile_arn" {
