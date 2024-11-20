@@ -55,7 +55,7 @@ resource "aws_instance" "frontend" {
   instance_type   = "t2.micro"
   key_name        = "vpro-key"
   subnet_id       = local.sandbox_subnet_id
-  security_groups = [ aws_security_group.front_sg.id ]
+  security_groups = [ aws_security_group.sg_front.id ]
   associate_public_ip_address = true
   iam_instance_profile = module.instance_profile_setup.instance_profile_name
 
@@ -74,7 +74,7 @@ resource "aws_instance" "frontend" {
   })
 }
 
-
+/*
 # Run EC2 instance 'MySQL'
 resource "aws_instance" "backend" {
   ami                         = var.OS_IMAGE_ID
@@ -86,7 +86,7 @@ resource "aws_instance" "backend" {
   iam_instance_profile = module.instance_profile_setup.instance_profile_name
 
   security_groups = [
-    aws_security_group.back_sg.id
+    aws_security_group.sg_back.id
   ]
   credit_specification {
     cpu_credits = "standard"
@@ -112,7 +112,7 @@ resource "aws_instance" "memcache" {
   private_ip                  = var.MEMCACHE_IP
 
   security_groups = [
-    aws_security_group.back_sg.id
+    aws_security_group.sg_back.id
   ]
   credit_specification {
     cpu_credits = "standard"
@@ -139,7 +139,7 @@ resource "aws_instance" "rabbitmq" {
   private_ip                  = var.RABBITMQ_IP
 
   security_groups = [
-    aws_security_group.back_sg.id
+    aws_security_group.sg_back.id
   ]
   credit_specification {
     cpu_credits = "standard"
@@ -154,7 +154,7 @@ resource "aws_instance" "rabbitmq" {
     rmq_ip  = var.RABBITMQ_IP
   })
 }
-
+*/
 
 # Run EC2 instance 'bastion'
 resource "aws_instance" "bastion" {
@@ -167,8 +167,8 @@ resource "aws_instance" "bastion" {
   iam_instance_profile = module.instance_profile_setup.instance_profile_name
 
   security_groups = [ 
-    aws_security_group.front_sg.id, 
-    aws_security_group.jump_sg.id
+    aws_security_group.sg_front.id, 
+    aws_security_group.sg_jump.id
   ]
   credit_specification {
     cpu_credits = "standard"

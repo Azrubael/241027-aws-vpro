@@ -1,5 +1,5 @@
 # Create a security group for frontend
-resource "aws_security_group" "front_sg" {
+resource "aws_security_group" "sg_front" {
   name        = "front-sg"
   description = "Frontend security group for application servers."
   vpc_id      = data.aws_vpc.selected.id
@@ -18,14 +18,14 @@ resource "aws_security_group" "front_sg" {
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
-    security_groups = [ aws_security_group.jump_sg.id ]
+    security_groups = [ aws_security_group.sg_jump.id ]
   }
 
   ingress { # ICMP: 0='echo reply', 8='echo request', -1=unlimited
     from_port       = 0
     to_port         = 0
     protocol        = "icmp"
-    security_groups = [ aws_security_group.jump_sg.id ]
+    security_groups = [ aws_security_group.sg_jump.id ]
   }
 
   egress {

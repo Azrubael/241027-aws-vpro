@@ -1,5 +1,5 @@
 # Create security group for backend
-resource "aws_security_group" "back_sg" {
+resource "aws_security_group" "sg_back" {
   name        = "back-sg"
   description = "Backend security group for DB, MemcacheD and RabbitMQ servers."
   vpc_id      = data.aws_vpc.selected.id
@@ -11,8 +11,8 @@ resource "aws_security_group" "back_sg" {
       to_port         = ingress.value[1]
       protocol        = ingress.value[0]
       security_groups = [
-        aws_security_group.front_sg.id,
-        aws_security_group.jump_sg.id
+        aws_security_group.sg_front.id,
+        aws_security_group.sg_jump.id
       ]
     }
   }
@@ -28,7 +28,7 @@ resource "aws_security_group" "back_sg" {
     from_port       = 0
     to_port         = 0
     protocol        = "icmp"
-    security_groups = [ aws_security_group.jump_sg.id ]
+    security_groups = [ aws_security_group.sg_jump.id ]
   }
 
   dynamic "egress" {

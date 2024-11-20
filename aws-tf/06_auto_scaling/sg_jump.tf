@@ -1,5 +1,5 @@
 # Create a security group for a jump server
-resource "aws_security_group" "jump_sg" {
+resource "aws_security_group" "sg_jump" {
   name        = "jump-sg"
   description = "Bastion security group."
   vpc_id      = data.aws_vpc.selected.id
