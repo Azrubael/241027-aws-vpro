@@ -1,3 +1,6 @@
+# The module to create an instance profile
+# to provide an access for an instance to AWS S3 bucket
+
 variable "s3_bucket" {
   type = string
 }
