@@ -1,3 +1,4 @@
+# Create a Launch Template for TomCat Autoscaling Group `tomcat_asg`
 resource "aws_launch_template" "vpro_app_template" {
   name_prefix   = "vpro-app-template"
   image_id      = var.OS_IMAGE_ID
@@ -5,8 +6,10 @@ resource "aws_launch_template" "vpro_app_template" {
   key_name      = "vpro-key"
 
   network_interfaces {
-    associate_public_ip_address = true
-    security_groups             = [aws_security_group.sg_front.id]
+    associate_public_ip_address = false
+    security_groups             = [
+      aws_security_group.sg_front.id
+    ]
     subnet_id                   = local.sandbox_subnet_id
   }
 
@@ -17,12 +20,20 @@ resource "aws_launch_template" "vpro_app_template" {
       S3_BUCKET_NAME     = var.BUCKET_NAME
     }
   )
+  
+  tags = {
+    Name      = "Vpro App Instance"
+    Project   = "vpro"
+    Server    = "TomCat"
+  }
 
   lifecycle {
     create_before_destroy = true
   }
 }
 
+
+# Create Autoscaling Group
 resource "aws_autoscaling_group" "tomcat_asg" {
   launch_template {
     id      = aws_launch_template.vpro_app_template.id
@@ -34,7 +45,7 @@ resource "aws_autoscaling_group" "tomcat_asg" {
   desired_capacity          = 1
   vpc_zone_identifier       = [local.sandbox_subnet_id]
   health_check_type         = "ELB"
-  health_check_grace_period = 60 
+  health_check_grace_period = 60 # seconds
 
   tag {
     key                     = "Name"
@@ -43,14 +54,18 @@ resource "aws_autoscaling_group" "tomcat_asg" {
   }
 }
 
+
+# Create autoscaling policy to scale out
 resource "aws_autoscaling_policy" "scale_out" {
   name                   = "scale-out"
   scaling_adjustment     = 1   # Scale up by 1
   adjustment_type        = "ChangeInCapacity"
-  cooldown               = 120 
+  cooldown               = 120 # seconds
   autoscaling_group_name = aws_autoscaling_group.tomcat_asg.name
 }
 
+
+# Create autoscaling policy to scale in
 resource "aws_autoscaling_policy" "scale_in" {
   name                   = "scale-in"
   scaling_adjustment     = -1  # Scale down by 1
@@ -59,6 +74,8 @@ resource "aws_autoscaling_policy" "scale_in" {
   autoscaling_group_name = aws_autoscaling_group.tomcat_asg.name
 }
 
+
+# Setup Target Tracking Scaling
 resource "aws_appautoscaling_target" "front_end" {
   max_capacity          = 3
   min_capacity          = 1
@@ -67,6 +84,8 @@ resource "aws_appautoscaling_target" "front_end" {
   service_namespace     = "aws:autoscaling"
 }
 
+
+# Define an application autoscaling policy
 resource "aws_appautoscaling_policy" "tomcat_asg_policy" {
   name                  = "request-count-policy"
   policy_type           = "TargetTrackingScaling"
@@ -76,8 +95,8 @@ resource "aws_appautoscaling_policy" "tomcat_asg_policy" {
 
   target_tracking_scaling_policy_configuration {
     target_value        = 50  # % of requests to track
-    scale_in_cooldown   = 120 
-    scale_out_cooldown  = 120 
+    scale_in_cooldown   = 120 # seconds
+    scale_out_cooldown  = 120 # seconds
 
     predefined_metric_specification {
       predefined_metric_type = "ALBRequestCountPerTarget"
