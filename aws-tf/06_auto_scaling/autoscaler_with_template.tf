@@ -13,13 +13,13 @@ resource "aws_launch_template" "vpro_app_template" {
     subnet_id                   = local.sandbox_subnet_id
   }
 
-  user_data = templatefile("${path.module}/vm-template-scripts/tomcat-template-script.sh", {
+  user_data = base64encode(templatefile("${path.module}/vm-template-scripts/tomcat-template-script.sh", {
       db_ip              = var.DATABASE_IP
       mc_ip              = var.MEMCACHE_IP
       rmq_ip             = var.RABBITMQ_IP
       S3_BUCKET_NAME     = var.BUCKET_NAME
     }
-  )
+  ))
   
   tags = {
     Name      = "Vpro App Instance"
@@ -80,8 +80,8 @@ resource "aws_appautoscaling_target" "front_end" {
   max_capacity          = 3
   min_capacity          = 1
   resource_id           = "autoScalingGroup:${aws_autoscaling_group.tomcat_asg.id}"
-  scalable_dimension    = "autoscaling:autoScalingGroup:DesiredCapacity"
-  service_namespace     = "aws:autoscaling"
+  scalable_dimension    = "ec2:autoScalingGroup:DesiredCapacity"
+  service_namespace     = "ec2"
 }
 
 

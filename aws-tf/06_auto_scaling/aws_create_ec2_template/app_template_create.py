@@ -1,5 +1,5 @@
 # The Python3 script to create an AWS EC2 launch template
-# for TomCat autoscaling group
+# for TomCat autoscaling group in the 'FRONTEND_NAME' subnet
 
 import os
 import boto3

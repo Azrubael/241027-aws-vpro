@@ -396,3 +396,48 @@ aws_alb_listener.front_end: Creation complete after 1s [id=arn:aws:elasticloadba
 │    2: resource "aws_launch_configuration" "tomcat_lc" {
 │ 
 ╵
+
+*******************************************************
+*******************************************************
+### 2024-11-21
+--------------
+
+aws_alb.front_end: Creation complete after 3m28s [id=arn:aws:elasticloadbalancing:us-east-1:463470984495:loadbalancer/app/tomcat-alb-tf/281c1b3a955a98bd]
+aws_alb_listener.front_end: Creating...
+aws_alb_listener.front_end: Creation complete after 2s [id=arn:aws:elasticloadbalancing:us-east-1:463470984495:listener/app/tomcat-alb-tf/281c1b3a955a98bd/28eba3fafe6fab64]
+╷
+│ Error: creating EC2 Launch Template (vpro-app-template20241121111444276600000001): operation error EC2: CreateLaunchTemplate, https response error StatusCode: 400, RequestID: 0fe735e9-5d59-4590-97a9-84da3f853ae8, api error InvalidUserData.Malformed: Invalid BASE64 encoding of user data.
+│ 
+│   with aws_launch_template.vpro_app_template,
+│   on autoscaler_with_template.tf line 2, in resource "aws_launch_template" "vpro_app_template":
+│    2: resource "aws_launch_template" "vpro_app_template" {
+│ 
+╵
+*******************************************************
+
+╷
+│ Error: creating Auto Scaling Group (terraform-20241121112954052200000004): operation error Auto Scaling: CreateAutoScalingGroup, https response error StatusCode: 403, RequestID: f3096ffa-321c-434a-8622-5cdcfa4622c2, api error AccessDenied: The default Service-Linked Role for Auto Scaling could not be created.  com.amazonaws.services.identitymanagement.model.AmazonIdentityManagementException: User: arn:aws:iam::463470984495:user/devops is not authorized to perform: iam:CreateServiceLinkedRole on resource: arn:aws:iam::463470984495:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling because no identity-based policy allows the iam:CreateServiceLinkedRole action (Service: AmazonIdentityManagement; Status Code: 403; Error Code: AccessDenied; Request ID: 6de13494-1d6c-4ce6-a050-8cc4e32cf32b; Proxy: null)
+│ 
+│   with aws_autoscaling_group.tomcat_asg,
+│   on autoscaler_with_template.tf line 37, in resource "aws_autoscaling_group" "tomcat_asg":
+│   37: resource "aws_autoscaling_group" "tomcat_asg" {
+│ 
+
+******************************************************
+│ Error: creating Auto Scaling Group (terraform-20241121120105450900000004): operation error Auto Scaling: CreateAutoScalingGroup, https response error StatusCode: 403, RequestID: a1c221fa-84a3-4991-92a1-7a5dc5ae4b82, api error AccessDenied: The default Service-Linked Role for Auto Scaling could not be created.  com.amazonaws.services.identitymanagement.model.AmazonIdentityManagementException: User: arn:aws:iam::463470984495:user/devops is not authorized to perform: iam:CreateServiceLinkedRole on resource: arn:aws:iam::463470984495:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling because no identity-based policy allows the iam:CreateServiceLinkedRole action (Service: AmazonIdentityManagement; Status Code: 403; Error Code: AccessDenied; Request ID: c2bbce3f-bed3-4e05-9fdf-b1c214b728b3; Proxy: null)
+│ 
+│   with aws_autoscaling_group.tomcat_asg,
+│   on autoscaler_with_template.tf line 37, in resource "aws_autoscaling_group" "tomcat_asg":
+│   37: resource "aws_autoscaling_group" "tomcat_asg" {
+│ 
+
+******************************************************
+aws_instance.bastion: Creation complete after 14s [id=i-08de9315600f9856a]
+╷
+│ Error: creating Application AutoScaling Target (autoScalingGroup:terraform-20241121120948921400000004): operation error Application Auto Scaling: RegisterScalableTarget, https response error StatusCode: 400, RequestID: 7c551a4f-6f85-4fb1-a6af-543f6dacdf56, ValidationException: 2 validation errors detected: Value 'aws:autoscaling' at 'serviceNamespace' failed to satisfy constraint: Member must satisfy enum value set: [comprehend, rds, sagemaker, appstream, elasticmapreduce, dynamodb, lambda, ecs, cassandra, ec2, neptune, kafka, workspaces, custom-resource, elasticache]; Value 'autoscaling:autoScalingGroup:DesiredCapacity' at 'scalableDimension' failed to satisfy constraint: Member must satisfy enum value set: [cassandra:table:ReadCapacityUnits, cassandra:table:WriteCapacityUnits, dynamodb:index:ReadCapacityUnits, dynamodb:index:WriteCapacityUnits, appstream:fleet:DesiredCapacity, sagemaker:inference-component:DesiredCopyCount, comprehend:document-classifier-endpoint:DesiredInferenceUnits, ec2:spot-fleet-request:TargetCapacity, ec2:capacity-reservation:AvailableInstances, rds:cluster:ReadReplicaCount, elasticache:replication-group:Replicas, workspaces:workspacespool:DesiredUserSessions, sagemaker:variant:DesiredProvisionedConcurrency, dynamodb:table:WriteCapacityUnits, kafka:broker-storage:VolumeSize, ecs:service:DesiredCount, sagemaker:variant:DesiredInstanceCount, comprehend:entity-recognizer-endpoint:DesiredInferenceUnits, dynamodb:table:ReadCapacityUnits, lambda:function:ProvisionedConcurrency, custom-resource:ResourceType:Property, neptune:cluster:ReadReplicaCount, elasticache:replication-group:NodeGroups, elasticmapreduce:instancegroup:InstanceCount]
+│ 
+│   with aws_appautoscaling_target.front_end,
+│   on autoscaler_with_template.tf line 79, in resource "aws_appautoscaling_target" "front_end":
+│   79: resource "aws_appautoscaling_target" "front_end" {
+│ 
+╵
