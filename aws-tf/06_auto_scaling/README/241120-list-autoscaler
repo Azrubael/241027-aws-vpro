@@ -1,0 +1,398 @@
+│ Error: creating Auto Scaling Launch Configuration (tomcat-launch-conf): operation error Auto Scaling: CreateLaunchConfiguration, https response error StatusCode: 400, RequestID: 55ea69ef-e6c7-4b8a-9700-7d923abe9ed2, api error UnsupportedOperation: The Launch Configuration creation operation is not available in your account. Use launch templates to create configuration templates for your Auto Scaling groups.
+│ 
+│   with aws_launch_configuration.tomcat_lc,
+│   on autoscaler.tf line 2, in resource "aws_launch_configuration" "tomcat_lc":
+│    2: resource "aws_launch_configuration" "tomcat_lc" {
+│ 
+╵
+╷
+│ Error: updating Security Group (sg-0a1bb08c147479343) ingress rules: authorizing Security Group (ingress) rules: operation error EC2: AuthorizeSecurityGroupIngress, https response error StatusCode: 400, RequestID: 61c86c0d-ebcf-42a7-964a-e2c9c85c5ea8, api error InvalidGroupId.Malformed: Invalid id: "0" (expecting "sg-...")
+│ 
+│   with aws_security_group.sg_elb,
+│   on sg_elb.tf line 2, in resource "aws_security_group" "sg_elb":
+│    2: resource "aws_security_group" "sg_elb" {
+
+***************************************
+***************************************
+
+vagrant@awslab:~/241120tf/06_auto_scaling$ terraform apply -auto-approve -input=false
+data.aws_vpc.selected: Reading...
+module.instance_profile_setup.data.aws_iam_role.existing_s3_role: Reading...
+module.instance_profile_setup.data.aws_s3_bucket.existing_bucket: Reading...
+module.instance_profile_setup.data.aws_iam_role.existing_s3_role: Read complete after 1s [id=EC2S3ReadOnlyRoleTF]
+module.instance_profile_setup.aws_iam_instance_profile.ec2_instance_profile: Refreshing state... [id=EC2S3ReadOnlyProfileTF]
+module.instance_profile_setup.data.aws_s3_bucket.existing_bucket: Read complete after 1s [id=az-20241102]
+data.aws_vpc.selected: Read complete after 2s [id=vpc-0ad76931b2d816711]
+aws_alb_target_group.front_end: Refreshing state... [id=arn:aws:elasticloadbalancing:us-east-1:463470984495:targetgroup/tomcat-tg/2353042a032ff74e]
+data.aws_subnet.sandbox[0]: Reading...
+data.aws_subnet.sandbox16[0]: Reading...
+aws_security_group.sg_alb: Refreshing state... [id=sg-099e7441867be9026]
+aws_security_group.sg_jump: Refreshing state... [id=sg-04a36cce0b59a2c38]
+data.aws_subnet.sandbox[0]: Read complete after 1s [id=subnet-045069395fd1d610d]
+aws_security_group.sg_front: Refreshing state... [id=sg-031c48c826e6724ce]
+data.aws_subnet.sandbox16[0]: Read complete after 1s [id=subnet-0b15a82390bd74c0d]
+aws_instance.bastion: Refreshing state... [id=i-0170961aa7231a8b8]
+aws_security_group.sg_back: Refreshing state... [id=sg-02c1c266971cc27e1]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+-/+ destroy and then create replacement
+
+Terraform will perform the following actions:
+
+  # aws_alb.front_end will be created
+  + resource "aws_alb" "front_end" {
+      + arn                                                          = (known after apply)
+      + arn_suffix                                                   = (known after apply)
+      + client_keep_alive                                            = 3600
+      + desync_mitigation_mode                                       = "defensive"
+      + dns_name                                                     = (known after apply)
+      + drop_invalid_header_fields                                   = false
+      + enable_deletion_protection                                   = false
+      + enable_http2                                                 = true
+      + enable_tls_version_and_cipher_suite_headers                  = false
+      + enable_waf_fail_open                                         = false
+      + enable_xff_client_port                                       = false
+      + enforce_security_group_inbound_rules_on_private_link_traffic = (known after apply)
+      + id                                                           = (known after apply)
+      + idle_timeout                                                 = 60
+      + internal                                                     = false
+      + ip_address_type                                              = (known after apply)
+      + load_balancer_type                                           = "application"
+      + name                                                         = "tomcat-alb-tf"
+      + name_prefix                                                  = (known after apply)
+      + preserve_host_header                                         = false
+      + security_groups                                              = [
+          + "sg-099e7441867be9026",
+        ]
+      + subnets                                                      = [
+          + "subnet-045069395fd1d610d",
+          + "subnet-0b15a82390bd74c0d",
+        ]
+      + tags                                                         = {
+          + "Name" = "Tomcat ALB"
+        }
+      + tags_all                                                     = {
+          + "Name" = "Tomcat ALB"
+        }
+      + vpc_id                                                       = (known after apply)
+      + xff_header_processing_mode                                   = "append"
+      + zone_id                                                      = (known after apply)
+
+      + subnet_mapping (known after apply)
+    }
+
+  # aws_alb_listener.front_end will be created
+  + resource "aws_alb_listener" "front_end" {
+      + arn                      = (known after apply)
+      + id                       = (known after apply)
+      + load_balancer_arn        = (known after apply)
+      + port                     = 80
+      + protocol                 = "HTTP"
+      + ssl_policy               = (known after apply)
+      + tags_all                 = (known after apply)
+      + tcp_idle_timeout_seconds = (known after apply)
+
+      + default_action {
+          + order            = (known after apply)
+          + target_group_arn = "arn:aws:elasticloadbalancing:us-east-1:463470984495:targetgroup/tomcat-tg/2353042a032ff74e"
+          + type             = "forward"
+        }
+
+      + mutual_authentication (known after apply)
+    }
+
+  # aws_appautoscaling_policy.tomcat_asg_policy will be created
+  + resource "aws_appautoscaling_policy" "tomcat_asg_policy" {
+      + alarm_arns         = (known after apply)
+      + arn                = (known after apply)
+      + id                 = (known after apply)
+      + name               = "request-count-policy"
+      + policy_type        = "TargetTrackingScaling"
+      + resource_id        = (known after apply)
+      + scalable_dimension = "autoscaling:autoScalingGroup:DesiredCapacity"
+      + service_namespace  = "aws:autoscaling"
+
+      + target_tracking_scaling_policy_configuration {
+          + disable_scale_in   = false
+          + scale_in_cooldown  = 120
+          + scale_out_cooldown = 120
+          + target_value       = 50
+
+          + predefined_metric_specification {
+              + predefined_metric_type = "ALBRequestCountPerTarget"
+              + resource_label         = (known after apply)
+            }
+        }
+    }
+
+  # aws_appautoscaling_target.front_end will be created
+  + resource "aws_appautoscaling_target" "front_end" {
+      + arn                = (known after apply)
+      + id                 = (known after apply)
+      + max_capacity       = 3
+      + min_capacity       = 1
+      + resource_id        = (known after apply)
+      + role_arn           = (known after apply)
+      + scalable_dimension = "autoscaling:autoScalingGroup:DesiredCapacity"
+      + service_namespace  = "aws:autoscaling"
+      + tags_all           = (known after apply)
+
+      + suspended_state (known after apply)
+    }
+
+  # aws_autoscaling_group.tomcat_asg will be created
+  + resource "aws_autoscaling_group" "tomcat_asg" {
+      + arn                              = (known after apply)
+      + availability_zones               = (known after apply)
+      + default_cooldown                 = (known after apply)
+      + desired_capacity                 = 1
+      + force_delete                     = false
+      + force_delete_warm_pool           = false
+      + health_check_grace_period        = 60
+      + health_check_type                = "ELB"
+      + id                               = (known after apply)
+      + ignore_failed_scaling_activities = false
+      + launch_configuration             = (known after apply)
+      + load_balancers                   = (known after apply)
+      + max_size                         = 3
+      + metrics_granularity              = "1Minute"
+      + min_size                         = 1
+      + name                             = (known after apply)
+      + name_prefix                      = (known after apply)
+      + predicted_capacity               = (known after apply)
+      + protect_from_scale_in            = false
+      + service_linked_role_arn          = (known after apply)
+      + target_group_arns                = (known after apply)
+      + vpc_zone_identifier              = [
+          + "subnet-045069395fd1d610d",
+        ]
+      + wait_for_capacity_timeout        = "10m"
+      + warm_pool_size                   = (known after apply)
+
+      + launch_template (known after apply)
+
+      + mixed_instances_policy (known after apply)
+
+      + tag {
+          + key                 = "Name"
+          + propagate_at_launch = true
+          + value               = "Tomcat ASG Server"
+        }
+
+      + traffic_source (known after apply)
+    }
+
+  # aws_autoscaling_policy.scale_in will be created
+  + resource "aws_autoscaling_policy" "scale_in" {
+      + adjustment_type         = "ChangeInCapacity"
+      + arn                     = (known after apply)
+      + autoscaling_group_name  = (known after apply)
+      + cooldown                = 120
+      + enabled                 = true
+      + id                      = (known after apply)
+      + metric_aggregation_type = (known after apply)
+      + name                    = "scale-in"
+      + policy_type             = "SimpleScaling"
+      + scaling_adjustment      = -1
+    }
+
+  # aws_autoscaling_policy.scale_out will be created
+  + resource "aws_autoscaling_policy" "scale_out" {
+      + adjustment_type         = "ChangeInCapacity"
+      + arn                     = (known after apply)
+      + autoscaling_group_name  = (known after apply)
+      + cooldown                = 120
+      + enabled                 = true
+      + id                      = (known after apply)
+      + metric_aggregation_type = (known after apply)
+      + name                    = "scale-out"
+      + policy_type             = "SimpleScaling"
+      + scaling_adjustment      = 1
+    }
+
+  # aws_instance.bastion must be replaced
+-/+ resource "aws_instance" "bastion" {
+      ~ arn                                  = "arn:aws:ec2:us-east-1:463470984495:instance/i-0170961aa7231a8b8" -> (known after apply)
+      ~ availability_zone                    = "us-east-1d" -> (known after apply)
+      ~ cpu_core_count                       = 1 -> (known after apply)
+      ~ cpu_threads_per_core                 = 1 -> (known after apply)
+      ~ disable_api_stop                     = false -> (known after apply)
+      ~ disable_api_termination              = false -> (known after apply)
+      ~ ebs_optimized                        = false -> (known after apply)
+      - hibernation                          = false -> null
+      + host_id                              = (known after apply)
+      + host_resource_group_arn              = (known after apply)
+      ~ id                                   = "i-0170961aa7231a8b8" -> (known after apply)
+      ~ instance_initiated_shutdown_behavior = "stop" -> (known after apply)
+      + instance_lifecycle                   = (known after apply)
+      ~ instance_state                       = "running" -> (known after apply)
+      ~ ipv6_address_count                   = 0 -> (known after apply)
+      ~ ipv6_addresses                       = [] -> (known after apply)
+      ~ monitoring                           = false -> (known after apply)
+      + outpost_arn                          = (known after apply)
+      + password_data                        = (known after apply)
+      + placement_group                      = (known after apply)
+      ~ placement_partition_number           = 0 -> (known after apply)
+      ~ primary_network_interface_id         = "eni-079ebbb0c8f41e33d" -> (known after apply)
+      ~ private_dns                          = "ip-172-31-32-249.ec2.internal" -> (known after apply)
+      ~ public_dns                           = "ec2-3-82-16-62.compute-1.amazonaws.com" -> (known after apply)
+      ~ public_ip                            = "3.82.16.62" -> (known after apply)
+      ~ secondary_private_ips                = [] -> (known after apply)
+      ~ security_groups                      = [ # forces replacement
+          - "front-sg",
+          - "jump-sg",
+          + "sg-031c48c826e6724ce",
+          + "sg-04a36cce0b59a2c38",
+        ]
+      + spot_instance_request_id             = (known after apply)
+        tags                                 = {
+            "Name"   = "jump01"
+            "Server" = "Bastion"
+        }
+      ~ tenancy                              = "default" -> (known after apply)
+      + user_data_base64                     = (known after apply)
+      ~ vpc_security_group_ids               = [
+          - "sg-031c48c826e6724ce",
+          - "sg-04a36cce0b59a2c38",
+        ] -> (known after apply)
+        # (12 unchanged attributes hidden)
+
+      ~ capacity_reservation_specification (known after apply)
+      - capacity_reservation_specification {
+          - capacity_reservation_preference = "open" -> null
+        }
+
+      ~ cpu_options (known after apply)
+      - cpu_options {
+          - core_count       = 1 -> null
+          - threads_per_core = 1 -> null
+            # (1 unchanged attribute hidden)
+        }
+
+      ~ ebs_block_device (known after apply)
+
+      ~ enclave_options (known after apply)
+      - enclave_options {
+          - enabled = false -> null
+        }
+
+      ~ ephemeral_block_device (known after apply)
+
+      ~ instance_market_options (known after apply)
+
+      ~ maintenance_options (known after apply)
+      - maintenance_options {
+          - auto_recovery = "default" -> null
+        }
+
+      ~ metadata_options (known after apply)
+      - metadata_options {
+          - http_endpoint               = "enabled" -> null
+          - http_protocol_ipv6          = "disabled" -> null
+          - http_put_response_hop_limit = 1 -> null
+          - http_tokens                 = "optional" -> null
+          - instance_metadata_tags      = "disabled" -> null
+        }
+
+      ~ network_interface (known after apply)
+
+      ~ private_dns_name_options (known after apply)
+      - private_dns_name_options {
+          - enable_resource_name_dns_a_record    = false -> null
+          - enable_resource_name_dns_aaaa_record = false -> null
+          - hostname_type                        = "ip-name" -> null
+        }
+
+      ~ root_block_device (known after apply)
+      - root_block_device {
+          - delete_on_termination = true -> null
+          - device_name           = "/dev/xvda" -> null
+          - encrypted             = false -> null
+          - iops                  = 100 -> null
+          - tags                  = {} -> null
+          - tags_all              = {} -> null
+          - throughput            = 0 -> null
+          - volume_id             = "vol-02fef14f95649b1ea" -> null
+          - volume_size           = 8 -> null
+          - volume_type           = "gp2" -> null
+            # (1 unchanged attribute hidden)
+        }
+
+        # (1 unchanged block hidden)
+    }
+
+  # aws_launch_configuration.tomcat_lc will be created
+  + resource "aws_launch_configuration" "tomcat_lc" {
+      + arn                         = (known after apply)
+      + associate_public_ip_address = (known after apply)
+      + ebs_optimized               = (known after apply)
+      + enable_monitoring           = true
+      + id                          = (known after apply)
+      + image_id                    = "ami-0984f4b9e98be44bf"
+      + instance_type               = "t2.micro"
+      + key_name                    = "vpro-key"
+      + name                        = "tomcat-launch-conf"
+      + name_prefix                 = (known after apply)
+      + security_groups             = [
+          + "sg-031c48c826e6724ce",
+        ]
+      + user_data                   = "4f2f6f5cc87c2acf2b3a3c6bf3c924798e84b53a"
+
+      + ebs_block_device (known after apply)
+
+      + metadata_options (known after apply)
+
+      + root_block_device (known after apply)
+    }
+
+Plan: 9 to add, 0 to change, 1 to destroy.
+
+Changes to Outputs:
+  + alb_public_IP            = (known after apply)
+  ~ bastion_public_IP        = "3.82.16.62" -> (known after apply)
+aws_instance.bastion: Destroying... [id=i-0170961aa7231a8b8]
+aws_launch_configuration.tomcat_lc: Creating...
+aws_alb.front_end: Creating...
+aws_instance.bastion: Still destroying... [id=i-0170961aa7231a8b8, 10s elapsed]
+aws_alb.front_end: Still creating... [10s elapsed]
+aws_alb.front_end: Still creating... [20s elapsed]
+aws_instance.bastion: Still destroying... [id=i-0170961aa7231a8b8, 20s elapsed]
+aws_instance.bastion: Still destroying... [id=i-0170961aa7231a8b8, 30s elapsed]
+aws_alb.front_end: Still creating... [30s elapsed]
+aws_alb.front_end: Still creating... [40s elapsed]
+aws_instance.bastion: Still destroying... [id=i-0170961aa7231a8b8, 40s elapsed]
+aws_alb.front_end: Still creating... [50s elapsed]
+aws_instance.bastion: Still destroying... [id=i-0170961aa7231a8b8, 50s elapsed]
+aws_instance.bastion: Destruction complete after 52s
+aws_instance.bastion: Creating...
+aws_alb.front_end: Still creating... [1m0s elapsed]
+aws_instance.bastion: Still creating... [10s elapsed]
+aws_instance.bastion: Creation complete after 14s [id=i-018b44ea78baedc7c]
+aws_alb.front_end: Still creating... [1m10s elapsed]
+aws_alb.front_end: Still creating... [1m20s elapsed]
+aws_alb.front_end: Still creating... [1m30s elapsed]
+aws_alb.front_end: Still creating... [1m40s elapsed]
+aws_alb.front_end: Still creating... [1m50s elapsed]
+aws_alb.front_end: Still creating... [2m0s elapsed]
+aws_alb.front_end: Still creating... [2m10s elapsed]
+aws_alb.front_end: Still creating... [2m20s elapsed]
+aws_alb.front_end: Still creating... [2m30s elapsed]
+aws_alb.front_end: Still creating... [2m40s elapsed]
+aws_alb.front_end: Still creating... [2m50s elapsed]
+aws_alb.front_end: Still creating... [3m0s elapsed]
+aws_alb.front_end: Still creating... [3m10s elapsed]
+aws_alb.front_end: Still creating... [3m20s elapsed]
+aws_alb.front_end: Still creating... [3m30s elapsed]
+aws_alb.front_end: Still creating... [3m40s elapsed]
+aws_alb.front_end: Creation complete after 3m47s [id=arn:aws:elasticloadbalancing:us-east-1:463470984495:loadbalancer/app/tomcat-alb-tf/b09a84e257d2d488]
+aws_alb_listener.front_end: Creating...
+aws_alb_listener.front_end: Creation complete after 1s [id=arn:aws:elasticloadbalancing:us-east-1:463470984495:listener/app/tomcat-alb-tf/b09a84e257d2d488/4e49a38704784d07]
+╷
+│ Error: creating Auto Scaling Launch Configuration (tomcat-launch-conf): operation error Auto Scaling: CreateLaunchConfiguration, https response error StatusCode: 400, RequestID: 2a9c3f96-4b83-416a-93e7-effcc5fd2a85, api error UnsupportedOperation: The Launch Configuration creation operation is not available in your account. Use launch templates to create configuration templates for your Auto Scaling groups.
+│ 
+│   with aws_launch_configuration.tomcat_lc,
+│   on autoscaler.tf line 2, in resource "aws_launch_configuration" "tomcat_lc":
+│    2: resource "aws_launch_configuration" "tomcat_lc" {
+│ 
+╵
