@@ -5,11 +5,13 @@ resource "aws_launch_template" "vpro_app_template" {
   instance_type = "t2.micro"
   key_name      = "vpro-key"
 
+  iam_instance_profile {
+    name = module.instance_profile_setup.instance_profile_name 
+  }
+
   network_interfaces {
-    associate_public_ip_address = false
-    security_groups             = [
-      aws_security_group.sg_front.id
-    ]
+    associate_public_ip_address = false #true
+    security_groups             = [ aws_security_group.sg_front.id ]
     subnet_id                   = local.sandbox_subnet_id
   }
 
@@ -35,17 +37,18 @@ resource "aws_launch_template" "vpro_app_template" {
 
 # Create Autoscaling Group
 resource "aws_autoscaling_group" "tomcat_asg" {
+  name                      = "vpro-app-asg"
+  min_size                  = 1
+  max_size                  = 3
+  desired_capacity          = 1
+  vpc_zone_identifier       = [ local.sandbox_subnet_id ]
+  health_check_type         = "ELB"
+  health_check_grace_period = 60 # seconds
+
   launch_template {
     id      = aws_launch_template.vpro_app_template.id
     version = "$Latest"
   }
-
-  min_size                  = 1
-  max_size                  = 3
-  desired_capacity          = 1
-  vpc_zone_identifier       = [local.sandbox_subnet_id]
-  health_check_type         = "ELB"
-  health_check_grace_period = 60 # seconds
 
   tag {
     key                     = "Name"
@@ -56,7 +59,7 @@ resource "aws_autoscaling_group" "tomcat_asg" {
 
 
 # Create autoscaling policy to scale out
-resource "aws_autoscaling_policy" "scale_out" {
+resource "aws_autoscaling_policy" "tomcat_asg_scale_out" {
   name                   = "scale-out"
   scaling_adjustment     = 1   # Scale up by 1
   adjustment_type        = "ChangeInCapacity"
@@ -66,7 +69,7 @@ resource "aws_autoscaling_policy" "scale_out" {
 
 
 # Create autoscaling policy to scale in
-resource "aws_autoscaling_policy" "scale_in" {
+resource "aws_autoscaling_policy" "tomcat_asg_scale_in" {
   name                   = "scale-in"
   scaling_adjustment     = -1  # Scale down by 1
   adjustment_type        = "ChangeInCapacity"
@@ -75,32 +78,32 @@ resource "aws_autoscaling_policy" "scale_in" {
 }
 
 
-# Setup Target Tracking Scaling
-resource "aws_appautoscaling_target" "front_end" {
-  max_capacity          = 3
-  min_capacity          = 1
-  resource_id           = "autoScalingGroup:${aws_autoscaling_group.tomcat_asg.id}"
-  scalable_dimension    = "ec2:autoScalingGroup:DesiredCapacity"
-  service_namespace     = "ec2"
+resource "aws_cloudwatch_metric_alarm" "high_request_count" {
+  alarm_name          = "high-request-count"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "1"
+  metric_name        = "RequestCount"
+  namespace          = "AWS/ApplicationELB"
+  period             = "30"
+  statistic          = "Sum"
+  threshold          = 50
+  alarm_description  = "This metric monitors ALB request count"
+  dimensions = { LoadBalancer = aws_alb.front_end.dns_name }
+
+  alarm_actions = [ aws_autoscaling_policy.tomcat_asg_scale_out.arn ]
 }
 
+resource "aws_cloudwatch_metric_alarm" "low_request_count" {
+  alarm_name          = "low-request-count"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = "1"
+  metric_name        = "RequestCount"
+  namespace          = "AWS/ApplicationELB"
+  period             = "30"
+  statistic          = "Sum"
+  threshold          = 10
+  alarm_description  = "This metric monitors ALB request count"
+  dimensions = { LoadBalancer = aws_alb.front_end.dns_name }
 
-# Define an application autoscaling policy
-resource "aws_appautoscaling_policy" "tomcat_asg_policy" {
-  name                  = "request-count-policy"
-  policy_type           = "TargetTrackingScaling"
-  resource_id           = aws_appautoscaling_target.front_end.id
-  scalable_dimension    = aws_appautoscaling_target.front_end.scalable_dimension
-  service_namespace     = aws_appautoscaling_target.front_end.service_namespace
-
-  target_tracking_scaling_policy_configuration {
-    target_value        = 50  # % of requests to track
-    scale_in_cooldown   = 120 # seconds
-    scale_out_cooldown  = 120 # seconds
-
-    predefined_metric_specification {
-      predefined_metric_type = "ALBRequestCountPerTarget"
-      resource_label         = "${aws_alb.front_end.arn_suffix}/${aws_alb_target_group.front_end.arn_suffix}"
-    }
-  }
+  alarm_actions = [ aws_autoscaling_policy.tomcat_asg_scale_in.arn ]
 }
