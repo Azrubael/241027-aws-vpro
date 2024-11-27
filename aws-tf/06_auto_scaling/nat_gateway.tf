@@ -1,6 +1,6 @@
 # Create an Elastic IP for the NAT Gateway
 resource "aws_eip" "nat" {
-  domain = true
+  domain = "vpc"
 }
 
 
@@ -17,7 +17,7 @@ resource "aws_nat_gateway" "nat" {
 
 # Create a private route table
 resource "aws_route_table" "sandbox" {
-  vpc_id = data.aws_vpc.default.id
+  vpc_id = data.aws_vpc.selected.id
 
   route {
     cidr_block     = var.WAN_CIDR
