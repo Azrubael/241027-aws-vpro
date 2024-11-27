@@ -1,6 +1,7 @@
 # Create an Elastic IP for the NAT Gateway
 resource "aws_eip" "nat" {
-  domain = "vpc"
+  # domain = "vpc"  # Optional: Set the EIP domain to VPC
+  # Ранее без этого работало
 }
 
 
