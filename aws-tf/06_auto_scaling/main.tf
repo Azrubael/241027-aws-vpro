@@ -11,7 +11,7 @@ data "aws_vpc" "selected" {
 }
 
 
-# Get or create the first sandbox subnet
+# Get the first sandbox subnet
 data "aws_subnet" "sandbox" {
   count = length(data.aws_vpc.selected.id) > 0 && var.SANDBOX_CIDR == cidrsubnet(data.aws_vpc.selected.cidr_block, 4, 2) ? 1 : 0
   filter {
@@ -20,6 +20,7 @@ data "aws_subnet" "sandbox" {
   }
   vpc_id = data.aws_vpc.selected.id
 }
+
 
 # Assign tag to the subnet if it doesn't exist
 resource "aws_subnet" "sandbox" {
@@ -32,7 +33,7 @@ resource "aws_subnet" "sandbox" {
 }
 
 
-# Get or create the second sandbox subnet
+# Get the second sandbox subnet
 data "aws_subnet" "sandbox16" {
   count = length(data.aws_vpc.selected.id) > 0 && var.SANDBOX_16_CIDR == cidrsubnet(data.aws_vpc.selected.cidr_block, 4, 1) ? 1 : 0
   filter {

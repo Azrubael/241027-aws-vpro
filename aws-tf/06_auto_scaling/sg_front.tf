@@ -8,19 +8,6 @@ resource "aws_security_group" "sg_front" {
     Name = "TomCat Frontend Security Group"
   }
 
-  # dynamic "ingress" {
-  #   for_each = var.FRONTEND_INGRESS
-  #   content {
-  #     from_port      = ingress.value[1]
-  #     to_port        = ingress.value[1]
-  #     protocol       = ingress.value[0]
-  #     security_groups = [ 
-  #       aws_security_group.sg_alb.id,
-  #       aws_security_group.sg_jump.id
-  #     ]
-  #   }
-  # }
-
 }
 
 
@@ -45,6 +32,7 @@ resource "aws_security_group_rule" "frontend_ingress_bastion" {
 
   source_security_group_id   = aws_security_group.sg_jump.id
 }
+
 
 # ICMP: 0='echo reply', 8='echo request', -1=unlimited
 resource "aws_security_group_rule" "ingress_icmp_to_front" {
@@ -72,9 +60,6 @@ resource "aws_security_group_rule" "egress_front_to_internet" {
   from_port         = 0
   to_port           = 0
   protocol          = "-1"
-  cidr_blocks       = [
-    var.WAN_CIDR,
-    var.SANDBOX_CIDR
-  ]
+  cidr_blocks       = [ var.WAN_CIDR ]
   security_group_id = aws_security_group.sg_front.id
 }

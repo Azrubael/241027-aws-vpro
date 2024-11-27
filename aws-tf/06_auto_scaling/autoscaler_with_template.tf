@@ -16,10 +16,10 @@ resource "aws_launch_template" "vpro_app_template" {
   }
 
   user_data = base64encode(templatefile("${path.module}/vm-template-scripts/tomcat-template-script.sh", {
-      db_ip              = var.DATABASE_IP
-      mc_ip              = var.MEMCACHE_IP
-      rmq_ip             = var.RABBITMQ_IP
-      S3_BUCKET_NAME     = var.BUCKET_NAME
+      db_ip          = var.DATABASE_IP
+      mc_ip          = var.MEMCACHE_IP
+      rmq_ip         = var.RABBITMQ_IP
+      S3_BUCKET_NAME = var.BUCKET_NAME
     }
   ))
   
@@ -41,19 +41,23 @@ resource "aws_autoscaling_group" "tomcat_asg" {
   min_size                  = 1
   max_size                  = 3
   desired_capacity          = 1
-  vpc_zone_identifier       = [ local.sandbox_subnet_id ]
-  health_check_type         = "ELB"
   health_check_grace_period = 60 # seconds
+  health_check_type         = "ELB"
+  
+  vpc_zone_identifier       = [
+    local.sandbox_subnet_id,
+    local.sandbox_subnet16_id
+  ]
 
   launch_template {
-    id      = aws_launch_template.vpro_app_template.id
-    version = "$Latest"
+    id                   = aws_launch_template.vpro_app_template.id
+    version              = "$Latest"
   }
 
   tag {
-    key                     = "Name"
-    value                   = "Tomcat ASG Server"
-    propagate_at_launch     = true
+    key                  = "Name"
+    value                = "Tomcat ASG Server"
+    propagate_at_launch  = true
   }
 }
 
@@ -79,30 +83,30 @@ resource "aws_autoscaling_policy" "tomcat_asg_scale_in" {
 
 
 resource "aws_cloudwatch_metric_alarm" "high_request_count" {
-  alarm_name          = "high-request-count"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "1"
-  metric_name        = "RequestCount"
-  namespace          = "AWS/ApplicationELB"
-  period             = "30"
-  statistic          = "Sum"
-  threshold          = 50
-  alarm_description  = "This metric monitors ALB request count"
+  alarm_name            = "high-request-count"
+  comparison_operator   = "GreaterThanThreshold"
+  evaluation_periods    = "1"
+  metric_name           = "RequestCount"
+  namespace             = "AWS/ApplicationELB"
+  period                = "30"
+  statistic             = "Sum"
+  threshold             = 50
+  alarm_description     = "This metric monitors ALB request count"
   dimensions = { LoadBalancer = aws_alb.front_end.dns_name }
 
   alarm_actions = [ aws_autoscaling_policy.tomcat_asg_scale_out.arn ]
 }
 
 resource "aws_cloudwatch_metric_alarm" "low_request_count" {
-  alarm_name          = "low-request-count"
-  comparison_operator = "LessThanThreshold"
-  evaluation_periods  = "1"
-  metric_name        = "RequestCount"
-  namespace          = "AWS/ApplicationELB"
-  period             = "30"
-  statistic          = "Sum"
-  threshold          = 10
-  alarm_description  = "This metric monitors ALB request count"
+  alarm_name            = "low-request-count"
+  comparison_operator   = "LessThanThreshold"
+  evaluation_periods    = "1"
+  metric_name           = "RequestCount"
+  namespace             = "AWS/ApplicationELB"
+  period                = "30"
+  statistic             = "Sum"
+  threshold             = 10
+  alarm_description     = "This metric monitors ALB request count"
   dimensions = { LoadBalancer = aws_alb.front_end.dns_name }
 
   alarm_actions = [ aws_autoscaling_policy.tomcat_asg_scale_in.arn ]
